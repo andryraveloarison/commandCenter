@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray } from 'class-validator';
 
 export class CreateModuleDto {
   @IsString()
@@ -10,6 +10,10 @@ export class CreateModuleDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  responsibleIds?: string[];
 }
 
 export class UpdateModuleDto {
@@ -24,4 +28,8 @@ export class UpdateModuleDto {
   @IsOptional()
   @IsNumber()
   progression?: number;
+
+  @IsOptional()
+  @IsArray()
+  responsibleIds?: string[];
 }

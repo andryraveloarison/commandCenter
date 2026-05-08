@@ -101,6 +101,10 @@ class APIService {
     return this.axiosInstance.post('/tasks', data);
   }
 
+  async createSubtask(parentId: string, data: any) {
+    return this.axiosInstance.post('/tasks', { ...data, parentId });
+  }
+
   async updateTask(id: string, data: any) {
     return this.axiosInstance.patch(`/tasks/${id}`, data);
   }

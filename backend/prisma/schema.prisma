@@ -86,11 +86,13 @@ model Module {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks        Task[]
+  responsibles User[]   @relation("ModuleResponsibles")
 
   @@map("modules")
 }
+
 
 enum ProjectStatus {
   PREPARATION

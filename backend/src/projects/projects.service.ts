@@ -92,17 +92,17 @@ export class ProjectsService {
   async calculateProgress(projectId: string, userId?: string) {
     const modules = await this.prisma.module.findMany({
       where: { projectId },
-      include: { tasks: true },
+      include: { tasks: { where: { parentId: null } } },
     });
 
     const orphanTasks = await this.prisma.task.findMany({
-      where: { projectId, moduleId: null },
+      where: { projectId, moduleId: null, parentId: null },
     });
 
     let totalProgress = 0;
     let count = 0;
 
-    // Calculate module progress
+    // Calculate module progress from root tasks only
     for (const module of modules) {
       if (module.tasks.length > 0) {
         const moduleProgress = module.tasks.reduce((sum, t) => sum + t.progression, 0) / module.tasks.length;
@@ -122,23 +122,33 @@ export class ProjectsService {
     }
 
     const averageProgress = count > 0 ? totalProgress / count : 0;
-
     const oldProject = await this.prisma.project.findUnique({ where: { id: projectId } });
-    
-    // Update project progress
+
+    // Auto-update status based on progression
+    let newStatus: string;
+    if (averageProgress >= 100) {
+      newStatus = 'TERMINE';
+    } else if (count > 0) {
+      newStatus = 'EN_COURS';
+    } else {
+      newStatus = oldProject?.statut || 'PREPARATION';
+    }
+
     await this.prisma.project.update({
       where: { id: projectId },
-      data: { progressionGlobale: averageProgress },
+      data: { progressionGlobale: averageProgress, statut: newStatus as any },
     });
 
-    // Record history if progression changed significantly or if forced
+    // Always record history when progression changes
     if (Math.abs((oldProject?.progressionGlobale || 0) - averageProgress) > 0.1 && userId) {
       await this.prisma.projectHistory.create({
         data: {
           projectId,
           userId,
           progression: averageProgress,
-          note: `Progression mise à jour à ${averageProgress.toFixed(1)}%`,
+          note: averageProgress >= 100
+            ? `✅ Projet terminé à 100%`
+            : `Progression mise à jour à ${averageProgress.toFixed(1)}%`,
         },
       });
     }

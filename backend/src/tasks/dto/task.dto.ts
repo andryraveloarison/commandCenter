@@ -30,6 +30,10 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   moduleId?: string;
+
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class UpdateTaskDto {
@@ -60,6 +64,10 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   moduleId?: string;
+
+  @IsOptional()
+  @IsString()
+  parentId?: string;
 }
 
 export class CreateCommentDto {
