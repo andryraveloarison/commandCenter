@@ -1,0 +1,8 @@
+/* 
+  Styles moved to src/styles/globals.css 
+  Keep this file for basic Tailwind directives if needed, 
+  but globals.css is currently the main entry.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

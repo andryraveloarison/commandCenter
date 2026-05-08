@@ -1,0 +1,153 @@
+import axios, { type AxiosInstance } from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+class APIService {
+  private axiosInstance: AxiosInstance;
+
+  constructor() {
+    this.axiosInstance = axios.create({
+      baseURL: API_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Add token to requests
+    this.axiosInstance.interceptors.request.use((config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+  }
+
+  // Authentication
+  async register(data: { email: string; username: string; nom: string; password: string }) {
+    return this.axiosInstance.post('/auth/register', data);
+  }
+
+  async login(data: { email: string; password: string }) {
+    return this.axiosInstance.post('/auth/login', data);
+  }
+
+  async getProfile() {
+    return this.axiosInstance.get('/auth/profile');
+  }
+
+  // Users
+  async getUsers() {
+    return this.axiosInstance.get('/users');
+  }
+
+  async getUser(id: string) {
+    return this.axiosInstance.get(`/users/${id}`);
+  }
+
+  async updateUser(id: string, data: any) {
+    return this.axiosInstance.patch(`/users/${id}`, data);
+  }
+
+  async getUserStatistics(id: string) {
+    return this.axiosInstance.get(`/users/${id}/statistics`);
+  }
+
+  // Projects
+  async getProjects() {
+    return this.axiosInstance.get('/projects');
+  }
+
+  async getProject(id: string) {
+    return this.axiosInstance.get(`/projects/${id}`);
+  }
+
+  async createProject(data: any) {
+    return this.axiosInstance.post('/projects', data);
+  }
+
+  async updateProject(id: string, data: any) {
+    return this.axiosInstance.patch(`/projects/${id}`, data);
+  }
+
+  async getProjectHistory(id: string) {
+    return this.axiosInstance.get(`/projects/${id}/history`);
+  }
+
+  async updateProjectProgress(id: string, data: any) {
+    return this.axiosInstance.patch(`/projects/${id}/progress`, data);
+  }
+
+  async getProjectStatistics(id: string) {
+    return this.axiosInstance.get(`/projects/${id}/statistics`);
+  }
+
+  async addProjectTeamMember(projectId: string, data: any) {
+    return this.axiosInstance.post(`/projects/${projectId}/team`, data);
+  }
+
+  // Tasks
+  async getTasks(projectId?: string) {
+    return this.axiosInstance.get('/tasks', {
+      params: projectId ? { projectId } : {},
+    });
+  }
+
+  async getTask(id: string) {
+    return this.axiosInstance.get(`/tasks/${id}`);
+  }
+
+  async createTask(data: any) {
+    return this.axiosInstance.post('/tasks', data);
+  }
+
+  async updateTask(id: string, data: any) {
+    return this.axiosInstance.patch(`/tasks/${id}`, data);
+  }
+
+  async getTasksByUser(userId: string) {
+    return this.axiosInstance.get(`/tasks/user/${userId}`);
+  }
+
+  async addTaskComment(taskId: string, data: any) {
+    return this.axiosInstance.post(`/tasks/${taskId}/comments`, data);
+  }
+
+  async getTaskComments(taskId: string) {
+    return this.axiosInstance.get(`/tasks/${taskId}/comments`);
+  }
+
+  // Modules
+  async getModules(projectId: string) {
+    return this.axiosInstance.get('/modules', { params: { projectId } });
+  }
+
+  async createModule(data: any) {
+    return this.axiosInstance.post('/modules', data);
+  }
+
+  async updateModule(id: string, data: any) {
+    return this.axiosInstance.patch(`/modules/${id}`, data);
+  }
+
+  async deleteModule(id: string) {
+    return this.axiosInstance.delete(`/modules/${id}`);
+  }
+
+  // Notifications
+  async getNotifications(unreadOnly = false) {
+    return this.axiosInstance.get('/notifications', {
+      params: { unreadOnly },
+    });
+  }
+
+  async markNotificationAsRead(id: string) {
+    return this.axiosInstance.patch(`/notifications/${id}/read`);
+  }
+
+  async deleteNotification(id: string) {
+    return this.axiosInstance.delete(`/notifications/${id}`);
+  }
+}
+
+export default new APIService();

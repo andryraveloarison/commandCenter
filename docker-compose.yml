@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: commandcenter-db
+    environment:
+      POSTGRES_USER: commandcenter
+      POSTGRES_PASSWORD: CommandCenter2026
+      POSTGRES_DB: commandcenter
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - commandcenter-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U commandcenter" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: commandcenter-api
+    environment:
+      DATABASE_URL: postgresql://commandcenter:CommandCenter2026@postgres:5432/commandcenter
+      JWT_SECRET: command-center-secret-key-military-operations
+      JWT_EXPIRATION: 7d
+      NODE_ENV: development
+      BACKEND_URL: http://localhost:3000
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - commandcenter-network
+    command: npm run start:dev
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: commandcenter-web
+    environment:
+      VITE_API_URL: http://localhost:3000/api
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - commandcenter-network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
+networks:
+  commandcenter-network:
+    driver: bridge

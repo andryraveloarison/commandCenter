@@ -1,0 +1,234 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER ====================
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  username  String     @unique
+  password  String
+  nom       String
+  photo     String?
+  role      UserRole   @default(DEVELOPPEUR)
+  statut    UserStatus @default(ACTIF)
+  activite  DateTime   @default(now()) @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  taskAssignments Task[]
+  projects        ProjectTeam[]
+  comments            Comment[]
+  notifications       Notification[]
+  history             ProjectHistory[]
+  responsibleModules  Module[]       @relation("ModuleResponsibles")
+
+  @@map("users")
+}
+
+enum UserRole {
+  DSI // Admin
+  RESPONSABLE // Project Manager
+  DEVELOPPEUR // Developer/Team Member
+}
+
+enum UserStatus {
+  ACTIF
+  INACTIF
+  OCCUPE
+}
+
+// ==================== PROJECT ====================
+
+model Project {
+  id          String        @id @default(cuid())
+  nom         String
+  description String?
+  statut      ProjectStatus @default(PREPARATION)
+  priorite    Priority      @default(MOYENNE)
+
+  dateDebut          DateTime
+  dateFin            DateTime?
+  progressionGlobale Float     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  modules  Module[]
+  tasks    Task[]
+  teams    ProjectTeam[]
+  history  ProjectHistory[]
+  comments Comment[]
+
+  @@map("projects")
+}
+
+// ==================== MODULE ====================
+
+model Module {
+  id          String   @id @default(cuid())
+  projectId   String
+  nom         String
+  description String?
+  progression Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@map("modules")
+}
+
+enum ProjectStatus {
+  PREPARATION
+  EN_COURS
+  CRITIQUE
+  TERMINE
+}
+
+enum Priority {
+  BASSE
+  MOYENNE
+  HAUTE
+  CRITIQUE
+}
+
+// ==================== PROJECT TEAM ====================
+
+model ProjectTeam {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_teams")
+}
+
+// ==================== TASK ====================
+
+model Task {
+  id          String     @id @default(cuid())
+  projectId   String
+  moduleId    String?
+  parentId    String?
+  titre       String
+  description String?
+  progression Float      @default(0)
+  statut      TaskStatus @default(TODO)
+  priorite    Priority   @default(MOYENNE)
+
+  dateDebut DateTime?
+  dateFin   DateTime?
+
+  assigneeId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  module      Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  assignee    User?        @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  parent      Task?        @relation("Subtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]       @relation("Subtasks")
+  comments    Comment[]
+  attachments Attachment[]
+
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  EN_COURS
+  EN_REVIEW
+  COMPLETEE
+  BLOQUEE
+}
+
+// ==================== PROJECT HISTORY ====================
+
+model ProjectHistory {
+  id          String   @id @default(cuid())
+  projectId   String
+  progression Float
+  note        String?
+  userId      String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("project_histories")
+}
+
+// ==================== COMMENT ====================
+
+model Comment {
+  id        String   @id @default(cuid())
+  taskId    String
+  projectId String
+  userId    String
+  contenu   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  task    Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+// ==================== ATTACHMENT ====================
+
+model Attachment {
+  id        String   @id @default(cuid())
+  taskId    String
+  nom       String
+  url       String
+  type      String
+  taille    Int
+  createdAt DateTime @default(now())
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+// ==================== NOTIFICATION ====================
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  titre     String
+  message   String
+  lu        Boolean  @default(false)
+  type      String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

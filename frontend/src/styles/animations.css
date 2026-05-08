@@ -1,0 +1,28 @@
+/* Premium Dashboard Animations */
+
+@keyframes pulseGlowPurple {
+  0%, 100% { box-shadow: 0 0 15px rgba(112, 0, 255, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(112, 0, 255, 0.7); }
+}
+
+@keyframes pulseGlowAccent {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 107, 0, 0.4); }
+  50% { box-shadow: 0 0 25px rgba(255, 107, 0, 0.7); }
+}
+
+.animate-glow-purple {
+  animation: pulseGlowPurple 3s ease-in-out infinite;
+}
+
+.animate-glow-accent {
+  animation: pulseGlowAccent 3s ease-in-out infinite;
+}
+
+.radar-sweep {
+  animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
