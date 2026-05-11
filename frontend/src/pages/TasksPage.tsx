@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import apiService from '@services/api';
 import { type Task } from '@types/index';
 
-const COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];
+const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
 const avatarColor = (id: string) => COLORS[id.charCodeAt(id.length - 1) % COLORS.length];
 
 const TasksPage: React.FC = () => {
@@ -24,7 +24,7 @@ const TasksPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-4">
 
       {/* Table Card */}
       <div className="premium-card p-0 overflow-hidden">
@@ -54,8 +54,8 @@ const TasksPage: React.FC = () => {
                   </td>
                   <td className="p-5">
                     <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${task.statut === 'COMPLETEE' ? 'bg-green-100 text-green-600' :
-                        task.statut === 'BLOQUEE' ? 'bg-red-100 text-red-600' :
-                          'bg-blue-100 text-blue-600'
+                      task.statut === 'BLOQUEE' ? 'bg-red-100 text-red-600' :
+                        'bg-blue-100 text-blue-600'
                       }`}>
                       {task.statut}
                     </span>

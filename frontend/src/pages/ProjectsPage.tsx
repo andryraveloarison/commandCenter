@@ -36,8 +36,8 @@ const ProjectsPage: React.FC = () => {
   }
 
   return (
-    <div>
-      <div className="space-y-12">
+    <div className="pb-4">
+      <div className="space-y-12 ">
         <div className="flex justify-end">
           <button
             onClick={() => setShowModal(true)}

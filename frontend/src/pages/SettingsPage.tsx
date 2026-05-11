@@ -14,6 +14,7 @@ const SettingsPage: React.FC = () => {
     email: '',
     password: '',
     photo: '',
+    role: '',
   });
 
   // Sync local state when Redux user data arrives (crucial for page refreshes)
@@ -24,6 +25,7 @@ const SettingsPage: React.FC = () => {
         email: auth.user.email || '',
         password: '',
         photo: auth.user.photo || '',
+        role: auth.user.role || 'DEVELOPPEUR',
       });
     }
   }, [auth.user]);
@@ -138,9 +140,16 @@ const SettingsPage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block ml-1">Rôle Système</label>
-                <div className="w-full bg-slate-100 border border-slate-200 p-4 rounded-2xl text-slate-400 font-black uppercase tracking-tight text-xs cursor-not-allowed">
-                  {auth.user?.role || 'DÉVELOPPEUR'}
-                </div>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-900 font-bold focus:border-slate-900 outline-none transition-all cursor-pointer"
+                >
+                  <option value="DSI">DSI — Administration</option>
+                  <option value="RESPONSABLE">Responsable — Chef de projet</option>
+                  <option value="DEVELOPPEUR">Développeur — Équipe technique</option>
+                  <option value="TECH_IT">Tech IT — Support technique</option>
+                </select>
               </div>
             </div>
 

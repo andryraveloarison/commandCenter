@@ -9,6 +9,14 @@ const UsersPage: React.FC = () => {
     queryFn: () => apiService.getUsers().then(r => r.data as User[]),
   });
 
+  const { data: onlineUsers = [] } = useQuery({
+    queryKey: ['onlineUsers'],
+    queryFn: () => apiService.getOnlineUsers().then(r => r.data as User[]),
+    refetchInterval: 15000,
+  });
+
+  const onlineIds = new Set(onlineUsers.map((u: User) => u.id));
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -21,7 +29,7 @@ const UsersPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 pb-4">
 
 
       {/* Users Grid */}
@@ -31,9 +39,9 @@ const UsersPage: React.FC = () => {
             key={user.id}
             className="premium-card group relative hover:border-slate-400 transition-all"
           >
-            {/* Status Indicator */}
+            {/* Status Indicator – green only if actually online */}
             <div className="absolute top-4 right-4">
-              <div className={`w-2.5 h-2.5 rounded-full ${user.statut === 'ACTIF' ? 'bg-green-500' : 'bg-slate-300'}`} />
+              <div className={`w-2.5 h-2.5 rounded-full ${onlineIds.has(user.id) ? 'bg-green-500' : 'bg-slate-300'}`} />
             </div>
 
             <div className="text-center">

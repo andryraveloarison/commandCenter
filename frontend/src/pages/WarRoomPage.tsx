@@ -42,7 +42,7 @@ const WarRoomPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-4">
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -81,27 +81,27 @@ const WarRoomPage: React.FC = () => {
               .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
               .slice(0, 3)
               .map((project) => (
-              <Link key={project.id} to={`/projects/${project.id}`} className="block p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-300 transition-colors group">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-lg shadow-sm overflow-hidden flex-shrink-0">
-                      {project.logo
-                        ? <img src={project.logo} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-slate-400 font-black text-sm">{project.nom[0]}</span>
-                      }
+                <Link key={project.id} to={`/projects/${project.id}`} className="block p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-300 transition-colors group">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-lg shadow-sm overflow-hidden flex-shrink-0">
+                        {project.logo
+                          ? <img src={project.logo} alt="" className="w-full h-full object-cover" />
+                          : <span className="text-slate-400 font-black text-sm">{project.nom[0]}</span>
+                        }
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:underline">{project.nom}</p>
+                        <p className="text-[10px] text-slate-400 font-bold">PRJ_{project.id.slice(-4).toUpperCase()}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight group-hover:underline">{project.nom}</p>
-                      <p className="text-[10px] text-slate-400 font-bold">PRJ_{project.id.slice(-4).toUpperCase()}</p>
-                    </div>
+                    <span className="text-xl font-black font-mono text-slate-900">{project.progressionGlobale.toFixed(0)}%</span>
                   </div>
-                  <span className="text-xl font-black font-mono text-slate-900">{project.progressionGlobale.toFixed(0)}%</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-slate-900 h-full rounded-full" style={{ width: `${project.progressionGlobale}%` }} />
-                </div>
-              </Link>
-            ))}
+                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-slate-900 h-full rounded-full" style={{ width: `${project.progressionGlobale}%` }} />
+                  </div>
+                </Link>
+              ))}
           </div>
         </div>
       </div>

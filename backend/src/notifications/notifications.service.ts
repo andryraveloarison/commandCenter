@@ -38,4 +38,14 @@ export class NotificationsService {
       where: { id: notificationId },
     });
   }
+
+  async getUnreadCount(userId: string) {
+    const count = await this.prisma.notification.count({ where: { userId, lu: false } });
+    return { count };
+  }
+
+  async markAllRead(userId: string) {
+    await this.prisma.notification.updateMany({ where: { userId, lu: false }, data: { lu: true } });
+    return { success: true };
+  }
 }

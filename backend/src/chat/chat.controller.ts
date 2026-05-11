@@ -21,8 +21,13 @@ export class ChatController {
   }
 
   @Get('count')
-  getCount() {
-    return this.chatService.getCount();
+  getCount(@Request() req) {
+    return this.chatService.getUnreadCount(req.user.id);
+  }
+
+  @Post('mark-read')
+  markAsRead(@Request() req) {
+    return this.chatService.markAsRead(req.user.id);
   }
 
   @Post()

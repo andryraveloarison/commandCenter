@@ -181,6 +181,59 @@ class APIService {
   async sendMessage(contenu: string) {
     return this.axiosInstance.post('/chat', { contenu });
   }
+
+  async markMessagesAsRead() {
+    return this.axiosInstance.post('/chat/mark-read');
+  }
+
+  // Notifications count
+  async getUnreadNotificationsCount() {
+    return this.axiosInstance.get('/notifications/count');
+  }
+
+  async markAllNotificationsRead() {
+    return this.axiosInstance.post('/notifications/mark-all-read');
+  }
+
+  // Direct messages
+  async getDmConversations() {
+    return this.axiosInstance.get('/direct-messages');
+  }
+
+  async getDmMessages(partnerId: string) {
+    return this.axiosInstance.get(`/direct-messages/${partnerId}`);
+  }
+
+  async sendDmMessage(receiverId: string, contenu: string) {
+    return this.axiosInstance.post(`/direct-messages/${receiverId}`, { contenu });
+  }
+
+  async markDmAsRead(partnerId: string) {
+    return this.axiosInstance.post(`/direct-messages/${partnerId}/read`);
+  }
+
+  async getUnreadDmCount() {
+    return this.axiosInstance.get('/direct-messages/unread-count');
+  }
+
+  // Sites
+  async getSites() { return this.axiosInstance.get('/sites'); }
+  async createSite(data: any) { return this.axiosInstance.post('/sites', data); }
+  async updateSite(id: string, data: any) { return this.axiosInstance.patch(`/sites/${id}`, data); }
+  async deleteSite(id: string) { return this.axiosInstance.delete(`/sites/${id}`); }
+
+  // Demandeurs
+  async getDemandeurs() { return this.axiosInstance.get('/demandeurs'); }
+  async createDemandeur(data: any) { return this.axiosInstance.post('/demandeurs', data); }
+  async updateDemandeur(id: string, data: any) { return this.axiosInstance.patch(`/demandeurs/${id}`, data); }
+  async deleteDemandeur(id: string) { return this.axiosInstance.delete(`/demandeurs/${id}`); }
+
+  // Interventions
+  async getInterventions() { return this.axiosInstance.get('/interventions'); }
+  async getInterventionStats() { return this.axiosInstance.get('/interventions/stats'); }
+  async createIntervention(data: any) { return this.axiosInstance.post('/interventions', data); }
+  async updateIntervention(id: string, data: any) { return this.axiosInstance.patch(`/interventions/${id}`, data); }
+  async deleteIntervention(id: string) { return this.axiosInstance.delete(`/interventions/${id}`); }
 }
 
 export default new APIService();

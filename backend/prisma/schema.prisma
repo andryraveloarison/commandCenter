@@ -32,15 +32,20 @@ model User {
   notifications       Notification[]
   history             ProjectHistory[]
   responsibleModules  Module[]       @relation("ModuleResponsibles")
-  messages            Message[]
+  messages                Message[]
+  messageReads            MessageRead[]
+  sentPrivateMessages     PrivateMessage[] @relation("SentPrivateMessages")
+  receivedPrivateMessages PrivateMessage[] @relation("ReceivedPrivateMessages")
+  interventions           Intervention[]   @relation("InterventionsIntervenant")
 
   @@map("users")
 }
 
 enum UserRole {
-  DSI // Admin
+  DSI         // Admin
   RESPONSABLE // Project Manager
   DEVELOPPEUR // Developer/Team Member
+  TECH_IT     // IT Technician
 }
 
 enum UserStatus {
@@ -223,13 +228,98 @@ model Attachment {
 // ==================== MESSAGE (chat groupe) ====================
 
 model Message {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   contenu   String
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reads     MessageRead[]
+  createdAt DateTime      @default(now())
 
   @@map("messages")
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@map("message_reads")
+}
+
+// ==================== SITE ====================
+
+model Site {
+  id        String   @id @default(cuid())
+  nom       String
+  createdAt DateTime @default(now())
+
+  demandeurs    Demandeur[]
+  interventions Intervention[]
+
+  @@map("sites")
+}
+
+// ==================== DEMANDEUR ====================
+
+model Demandeur {
+  id        String   @id @default(cuid())
+  nom       String
+  siteId    String?
+  createdAt DateTime @default(now())
+
+  site          Site?          @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  interventions Intervention[]
+
+  @@map("demandeurs")
+}
+
+// ==================== INTERVENTION ====================
+
+model Intervention {
+  id               String             @id @default(cuid())
+  probleme         String
+  solution         String?
+  statut           InterventionStatus @default(EN_ATTENTE)
+  dateIntervention DateTime?
+  intervenantId    String?
+  demandeurId      String?
+  siteId           String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  intervenant User?      @relation("InterventionsIntervenant", fields: [intervenantId], references: [id], onDelete: SetNull)
+  demandeur   Demandeur? @relation(fields: [demandeurId],   references: [id], onDelete: SetNull)
+  site        Site?      @relation(fields: [siteId],        references: [id], onDelete: SetNull)
+
+  @@map("interventions")
+}
+
+enum InterventionStatus {
+  EN_ATTENTE
+  EN_COURS
+  RESOLU
+  ANNULE
+}
+
+// ==================== PRIVATE MESSAGE ====================
+
+model PrivateMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  contenu    String
+  lu         Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentPrivateMessages",     fields: [senderId],   references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedPrivateMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("private_messages")
 }
 
 // ==================== NOTIFICATION ====================

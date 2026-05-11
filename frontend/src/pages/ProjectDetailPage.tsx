@@ -18,6 +18,15 @@ const ProjectDetailPage: React.FC = () => {
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<{ date: string; progression: number; entries: any[] } | null>(null);
+  const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set());
+
+  const toggleCollapse = (moduleId: string) => {
+    setCollapsedModules(prev => {
+      const next = new Set(prev);
+      next.has(moduleId) ? next.delete(moduleId) : next.add(moduleId);
+      return next;
+    });
+  };
   const [editForm, setEditForm] = useState({ nom: '', description: '', logo: '', priorite: '', statut: '' });
 
   const { data: project, isLoading } = useQuery({
@@ -100,7 +109,7 @@ const ProjectDetailPage: React.FC = () => {
       : 'bg-blue-100 text-blue-600';
 
   return (
-    <div className="mx-auto px-4">
+    <div className="mx-auto px-4 pb-4">
       <div className="space-y-8">
 
         {/* Header */}
@@ -269,19 +278,31 @@ const ProjectDetailPage: React.FC = () => {
                         title="Ajouter une tâche"
                       >+</button>
                       <button
+                        onClick={() => toggleCollapse(module.id)}
+                        className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 hover:border-slate-300 transition-all text-sm font-black"
+                        title={collapsedModules.has(module.id) ? 'Afficher les tâches' : 'Masquer les tâches'}
+                        style={{ transform: collapsedModules.has(module.id) ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+                      >
+                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <polyline points="18 15 12 9 6 15" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      <button
                         onClick={() => { if (confirm('Supprimer ce module ?')) deleteModuleMutation.mutate(module.id); }}
                         className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all text-sm font-black"
                         title="Supprimer le module"
                       >×</button>
                     </div>
                   </div>
-                  <div className="divide-y divide-slate-50/80 bg-white">
-                    {module.tasks?.length ? module.tasks.map((task: any) => (
-                      <SubTaskRow key={task.id} task={task} depth={0} projectId={id!} users={users} projectUsers={projectUsers} onRefresh={refresh} />
-                    )) : (
-                      <p className="text-center text-slate-300 text-[10px] font-black uppercase py-4">Aucune tâche</p>
-                    )}
-                  </div>
+                  {!collapsedModules.has(module.id) && (
+                    <div className="divide-y divide-slate-50/80 bg-white">
+                      {module.tasks?.length ? module.tasks.map((task: any) => (
+                        <SubTaskRow key={task.id} task={task} depth={0} projectId={id!} users={users} projectUsers={projectUsers} onRefresh={refresh} />
+                      )) : (
+                        <p className="text-center text-slate-300 text-[10px] font-black uppercase py-4">Aucune tâche</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )) : (
                 <div className="p-10 text-center border-2 border-dashed border-slate-100 rounded-3xl">

@@ -10,7 +10,7 @@ const App = () => {
   const location = useLocation();
   const dispatch = useAppDispatch();
   const { isAuthenticated, token, user } = useAppSelector((state) => state.auth);
-  
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (token && !user) {
@@ -34,6 +34,10 @@ const App = () => {
   const isLoginPage = location.pathname === '/login';
 
   if (isLoginPage) {
+    return <Router />;
+  }
+
+  if (!isAuthenticated && !isLoginPage) {
     return <Router />;
   }
 

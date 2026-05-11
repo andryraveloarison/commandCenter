@@ -4,7 +4,7 @@ export interface User {
   username: string;
   nom: string;
   photo?: string;
-  role: 'DSI' | 'RESPONSABLE' | 'DEVELOPPEUR';
+  role: 'DSI' | 'RESPONSABLE' | 'DEVELOPPEUR' | 'TECH_IT';
   statut: 'ACTIF' | 'INACTIF' | 'OCCUPE';
   createdAt: string;
   activite: string;

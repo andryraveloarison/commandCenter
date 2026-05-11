@@ -8,6 +8,10 @@ import { TasksModule } from './tasks/tasks.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ModulesHierarchyModule } from './modules/modules.module';
 import { ChatModule } from './chat/chat.module';
+import { DirectMessagesModule } from './direct-messages/direct-messages.module';
+import { SitesModule } from './sites/sites.module';
+import { DemandeursModule } from './demandeurs/demandeurs.module';
+import { InterventionsModule } from './interventions/interventions.module';
 
 @Module({
   imports: [
@@ -23,6 +27,10 @@ import { ChatModule } from './chat/chat.module';
     NotificationsModule,
     ModulesHierarchyModule,
     ChatModule,
+    DirectMessagesModule,
+    SitesModule,
+    DemandeursModule,
+    InterventionsModule,
   ],
 })
 export class AppModule {}
