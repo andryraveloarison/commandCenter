@@ -46,9 +46,10 @@ const LoginPage: React.FC = () => {
         });
       }
 
-      const { access_token, user } = response.data;
+      const { access_token } = response.data;
       dispatch(setToken(access_token));
-      dispatch(setUser(user));
+      const profile = await apiService.getProfile();
+      dispatch(setUser(profile.data));
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Erreur d\'authentification');

@@ -14,6 +14,7 @@ export interface Project {
   id: string;
   nom: string;
   description?: string;
+  logo?: string;
   statut: 'PREPARATION' | 'EN_COURS' | 'CRITIQUE' | 'TERMINE';
   priorite: 'BASSE' | 'MOYENNE' | 'HAUTE' | 'CRITIQUE';
   progressionGlobale: number;

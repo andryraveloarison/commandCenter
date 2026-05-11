@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import apiService from '@services/api';
 import { type Task } from '@types/index';
 
+const COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];
+const avatarColor = (id: string) => COLORS[id.charCodeAt(id.length - 1) % COLORS.length];
+
 const TasksPage: React.FC = () => {
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['tasks'],
@@ -22,13 +25,6 @@ const TasksPage: React.FC = () => {
 
   return (
     <div className="space-y-12">
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-black font-montserrat tracking-tighter uppercase mb-2 text-slate-900">
-          Registre des <span className="text-slate-400">Missions</span>
-        </h1>
-        <p className="text-slate-500 font-medium">Suivi détaillé des flux techniques et déploiements</p>
-      </div>
 
       {/* Table Card */}
       <div className="premium-card p-0 overflow-hidden">
@@ -57,19 +53,17 @@ const TasksPage: React.FC = () => {
                     <p className="text-sm font-bold text-slate-700 uppercase tracking-tight">{task.titre}</p>
                   </td>
                   <td className="p-5">
-                    <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${
-                      task.statut === 'COMPLETEE' ? 'bg-green-100 text-green-600' :
-                      task.statut === 'BLOQUEE' ? 'bg-red-100 text-red-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${task.statut === 'COMPLETEE' ? 'bg-green-100 text-green-600' :
+                        task.statut === 'BLOQUEE' ? 'bg-red-100 text-red-600' :
+                          'bg-blue-100 text-blue-600'
+                      }`}>
                       {task.statut}
                     </span>
                   </td>
                   <td className="p-5">
                     <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${
-                        task.priorite === 'HAUTE' || task.priorite === 'CRITIQUE' ? 'bg-red-500' : 'bg-slate-300'
-                      }`} />
+                      <div className={`w-1.5 h-1.5 rounded-full ${task.priorite === 'HAUTE' || task.priorite === 'CRITIQUE' ? 'bg-red-500' : 'bg-slate-300'
+                        }`} />
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                         {task.priorite}
                       </span>
@@ -88,8 +82,14 @@ const TasksPage: React.FC = () => {
                   </td>
                   <td className="p-5">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-[10px] text-slate-900 font-black">
-                        {task.assignee?.nom?.substring(0, 2).toUpperCase() || '??'}
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black text-white overflow-hidden flex-shrink-0"
+                        style={{ backgroundColor: task.assignee ? avatarColor(task.assignee.id) : '#cbd5e1' }}
+                      >
+                        {task.assignee?.photo
+                          ? <img src={task.assignee.photo} alt="" className="w-full h-full object-cover" />
+                          : task.assignee?.nom?.substring(0, 2).toUpperCase() || '??'
+                        }
                       </div>
                       <span className="text-xs font-bold text-slate-700">{task.assignee?.nom || 'Non attribué'}</span>
                     </div>

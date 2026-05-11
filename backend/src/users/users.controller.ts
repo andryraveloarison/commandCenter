@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
@@ -24,6 +25,18 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users' })
   async findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('online')
+  @ApiOperation({ summary: 'Get online users (active in last 45s)' })
+  async findOnline() {
+    return this.usersService.findOnline();
+  }
+
+  @Post('heartbeat')
+  @ApiOperation({ summary: 'Signal that user is online' })
+  async heartbeat(@Request() req) {
+    return this.usersService.heartbeat(req.user.id);
   }
 
   @Get(':id')

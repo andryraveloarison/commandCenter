@@ -1,4 +1,4 @@
-import { IsString, IsDateString, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsDateString, IsOptional, IsArray } from 'class-validator';
 
 export class CreateProjectDto {
   @IsString()
@@ -18,6 +18,15 @@ export class CreateProjectDto {
   @IsOptional()
   @IsString()
   priorite?: string;
+
+  @IsOptional()
+  @IsString()
+  logo?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  teamUserIds?: string[];
 }
 
 export class UpdateProjectDto {
@@ -28,6 +37,10 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  logo?: string;
 
   @IsOptional()
   @IsString()

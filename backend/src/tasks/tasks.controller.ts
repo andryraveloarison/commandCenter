@@ -24,8 +24,8 @@ export class TasksController {
 
   @Post()
   @ApiOperation({ summary: 'Create new task' })
-  async create(@Body() dto: CreateTaskDto) {
-    return this.tasksService.create(dto);
+  async create(@Body() dto: CreateTaskDto, @Request() req) {
+    return this.tasksService.create(dto, req.user.id);
   }
 
   @Get()
@@ -70,7 +70,7 @@ export class TasksController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete task' })
-  async remove(@Param('id') id: string) {
-    return this.tasksService.remove(id);
+  async remove(@Param('id') id: string, @Request() req) {
+    return this.tasksService.remove(id, req.user.id);
   }
 }

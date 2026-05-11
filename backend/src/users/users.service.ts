@@ -75,6 +75,23 @@ export class UsersService {
     });
   }
 
+  async heartbeat(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { activite: new Date() },
+    });
+    return { ok: true };
+  }
+
+  async findOnline() {
+    const threshold = new Date(Date.now() - 45 * 1000);
+    return this.prisma.user.findMany({
+      where: { activite: { gte: threshold } },
+      select: { id: true, nom: true, photo: true, role: true, statut: true, activite: true },
+      orderBy: { activite: 'desc' },
+    });
+  }
+
   async getStatistics(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },

@@ -7,6 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { TasksModule } from './tasks/tasks.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ModulesHierarchyModule } from './modules/modules.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ModulesHierarchyModule } from './modules/modules.module';
     TasksModule,
     NotificationsModule,
     ModulesHierarchyModule,
+    ChatModule,
   ],
 })
 export class AppModule {}

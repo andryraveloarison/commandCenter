@@ -21,7 +21,7 @@ model User {
   photo     String?
   role      UserRole   @default(DEVELOPPEUR)
   statut    UserStatus @default(ACTIF)
-  activite  DateTime   @default(now()) @updatedAt
+  activite  DateTime   @default(now())
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
@@ -32,6 +32,7 @@ model User {
   notifications       Notification[]
   history             ProjectHistory[]
   responsibleModules  Module[]       @relation("ModuleResponsibles")
+  messages            Message[]
 
   @@map("users")
 }
@@ -54,6 +55,7 @@ model Project {
   id          String        @id @default(cuid())
   nom         String
   description String?
+  logo        String?
   statut      ProjectStatus @default(PREPARATION)
   priorite    Priority      @default(MOYENNE)
 
@@ -216,6 +218,18 @@ model Attachment {
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@map("attachments")
+}
+
+// ==================== MESSAGE (chat groupe) ====================
+
+model Message {
+  id        String   @id @default(cuid())
+  contenu   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("messages")
 }
 
 // ==================== NOTIFICATION ====================

@@ -12,7 +12,7 @@ const subtaskInclude = (depth = 3): any => ({
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateTaskDto) {
+  async create(dto: CreateTaskDto, userId?: string) {
     const task = await this.prisma.task.create({
       data: {
         projectId: dto.projectId,
@@ -35,6 +35,12 @@ export class TasksService {
         data: { statut: 'EN_COURS' as any },
       });
     }
+
+    const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
+    const actionNote = dto.parentId
+      ? `Sous-tâche ajoutée : "${task.titre}"`
+      : `Tâche ajoutée : "${task.titre}"`;
+    await projectsService.calculateProgress(dto.projectId, userId, actionNote);
 
     return task;
   }
@@ -60,6 +66,7 @@ export class TasksService {
   }
 
   async update(id: string, dto: UpdateTaskDto, userId: string) {
+    const oldTask = await this.prisma.task.findUnique({ where: { id } });
     const task = await this.prisma.task.update({
       where: { id },
       data: dto as any,
@@ -70,8 +77,14 @@ export class TasksService {
 
     // Recalculate project progress if progression changed
     if (dto.progression !== undefined || dto.statut !== undefined) {
+      let actionNote: string | undefined;
+      if (dto.progression !== undefined && oldTask && Math.round(oldTask.progression) !== Math.round(dto.progression)) {
+        actionNote = `"${task.titre}" : ${Math.round(oldTask.progression)}% → ${Math.round(dto.progression)}%`;
+      } else if (dto.statut !== undefined && oldTask && oldTask.statut !== dto.statut) {
+        actionNote = `"${task.titre}" : statut ${oldTask.statut} → ${dto.statut}`;
+      }
       const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
-      await projectsService.calculateProgress(task.projectId, userId);
+      await projectsService.calculateProgress(task.projectId, userId, actionNote);
     }
 
     return task;
@@ -107,8 +120,14 @@ export class TasksService {
     });
   }
 
-  async remove(id: string) {
-    return this.prisma.task.delete({ where: { id } });
+  async remove(id: string, userId?: string) {
+    const task = await this.prisma.task.findUnique({ where: { id } });
+    const deleted = await this.prisma.task.delete({ where: { id } });
+    if (task && !task.parentId) {
+      const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
+      await projectsService.calculateProgress(task.projectId, userId, `Tâche supprimée : "${task.titre}"`);
+    }
+    return deleted;
   }
 
   async addComment(taskId: string, projectId: string, userId: string, dto: CreateCommentDto) {

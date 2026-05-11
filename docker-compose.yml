@@ -32,6 +32,7 @@ services:
       NODE_ENV: development
       BACKEND_URL: http://localhost:3000
       FRONTEND_URL: http://localhost:5173
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "3000:3000"
     depends_on:
@@ -42,7 +43,7 @@ services:
       - /app/node_modules
     networks:
       - commandcenter-network
-    command: npm run start:dev
+    command: sh -c "npx prisma generate && npx prisma db push && npm run start:dev"
 
   # Frontend
   frontend:
@@ -52,6 +53,7 @@ services:
     container_name: commandcenter-web
     environment:
       VITE_API_URL: http://localhost:3000/api
+      CHOKIDAR_USEPOLLING: "true"
     ports:
       - "5173:5173"
     depends_on:

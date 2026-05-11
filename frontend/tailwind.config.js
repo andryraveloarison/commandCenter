@@ -32,8 +32,10 @@ export default {
       },
       boxShadow: {
         'premium': '0 4px 20px rgba(0, 0, 0, 0.08)',
-        'glow-accent': '0 0 15px rgba(255, 107, 0, 0.4)',
-        'glow-purple': '0 0 15px rgba(112, 0, 255, 0.4)',
+        'card':    '0 2px 12px rgba(32, 32, 96, 0.06)',
+        'card-md': '0 6px 28px rgba(32, 32, 96, 0.10)',
+        'card-lg': '0 12px 40px rgba(32, 32, 96, 0.14)',
+        'glow-accent': '0 0 15px rgba(99, 102, 241, 0.35)',
       },
       borderRadius: {
         'sidebar': '32px',

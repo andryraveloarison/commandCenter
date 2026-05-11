@@ -11,6 +11,7 @@ export class ProjectsService {
       data: {
         nom: dto.nom,
         description: dto.description,
+        logo: dto.logo,
         dateDebut: new Date(dto.dateDebut),
         dateFin: dto.dateFin ? new Date(dto.dateFin) : null,
         priorite: (dto.priorite || 'MOYENNE') as any,
@@ -25,6 +26,21 @@ export class ProjectsService {
         role: 'COLONEL',
       },
     });
+
+    // Add selected team members
+    if (dto.teamUserIds && dto.teamUserIds.length > 0) {
+      for (const memberId of dto.teamUserIds) {
+        if (memberId !== userId) {
+          await this.prisma.projectTeam.create({
+            data: {
+              projectId: project.id,
+              userId: memberId,
+              role: 'MEMBRE',
+            },
+          });
+        }
+      }
+    }
 
     return project;
   }
@@ -45,7 +61,23 @@ export class ProjectsService {
         teams: { include: { user: true } },
         modules: {
           include: {
-            tasks: { include: { assignee: true } },
+            tasks: {
+              where: { parentId: null },
+              include: {
+                assignee: true,
+                subtasks: {
+                  include: {
+                    assignee: true,
+                    subtasks: {
+                      include: {
+                        assignee: true,
+                        subtasks: { include: { assignee: true } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         tasks: { where: { moduleId: null } }, // Tasks without a module
@@ -89,7 +121,7 @@ export class ProjectsService {
     });
   }
 
-  async calculateProgress(projectId: string, userId?: string) {
+  async calculateProgress(projectId: string, userId?: string, actionNote?: string) {
     const modules = await this.prisma.module.findMany({
       where: { projectId },
       include: { tasks: { where: { parentId: null } } },
@@ -146,9 +178,9 @@ export class ProjectsService {
           projectId,
           userId,
           progression: averageProgress,
-          note: averageProgress >= 100
+          note: actionNote || (averageProgress >= 100
             ? `✅ Projet terminé à 100%`
-            : `Progression mise à jour à ${averageProgress.toFixed(1)}%`,
+            : `Progression mise à jour à ${averageProgress.toFixed(1)}%`),
         },
       });
     }

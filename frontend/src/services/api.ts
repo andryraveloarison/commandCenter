@@ -53,6 +53,14 @@ class APIService {
     return this.axiosInstance.get(`/users/${id}/statistics`);
   }
 
+  async getOnlineUsers() {
+    return this.axiosInstance.get('/users/online');
+  }
+
+  async heartbeat() {
+    return this.axiosInstance.post('/users/heartbeat');
+  }
+
   // Projects
   async getProjects() {
     return this.axiosInstance.get('/projects');
@@ -86,6 +94,10 @@ class APIService {
     return this.axiosInstance.post(`/projects/${projectId}/team`, data);
   }
 
+  async removeProjectTeamMember(projectId: string, userId: string) {
+    return this.axiosInstance.delete(`/projects/${projectId}/team/${userId}`);
+  }
+
   // Tasks
   async getTasks(projectId?: string) {
     return this.axiosInstance.get('/tasks', {
@@ -107,6 +119,10 @@ class APIService {
 
   async updateTask(id: string, data: any) {
     return this.axiosInstance.patch(`/tasks/${id}`, data);
+  }
+
+  async deleteTask(id: string) {
+    return this.axiosInstance.delete(`/tasks/${id}`);
   }
 
   async getTasksByUser(userId: string) {
@@ -151,6 +167,19 @@ class APIService {
 
   async deleteNotification(id: string) {
     return this.axiosInstance.delete(`/notifications/${id}`);
+  }
+
+  // Chat groupe
+  async getMessages() {
+    return this.axiosInstance.get('/chat');
+  }
+
+  async getMessageCount() {
+    return this.axiosInstance.get('/chat/count');
+  }
+
+  async sendMessage(contenu: string) {
+    return this.axiosInstance.post('/chat', { contenu });
   }
 }
 
