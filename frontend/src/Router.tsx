@@ -9,6 +9,7 @@ import UsersPage from '@pages/UsersPage';
 import WarRoomPage from '@pages/WarRoomPage';
 import SettingsPage from '@pages/SettingsPage';
 import MessagesPage from '@pages/MessagesPage';
+import CalendarPage from '@pages/CalendarPage';
 
 const Router = () => {
   return (
@@ -23,6 +24,7 @@ const Router = () => {
       <Route path="/war-room" element={<WarRoomPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/messages" element={<MessagesPage />} />
+      <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/" element={<Navigate to="/dashboard" />} />
     </Routes>
   );

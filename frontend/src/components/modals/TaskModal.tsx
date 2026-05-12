@@ -12,18 +12,38 @@ interface Props {
 }
 
 const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers, onSuccess }) => {
-  const [form, setForm] = useState({ titre: '', assigneeId: '', priorite: 'MOYENNE' });
+  const [form, setForm] = useState({
+    titre: '',
+    assigneeId: '',
+    priorite: 'MOYENNE',
+    dateDebut: '',
+    dateFin: '',
+    situation: '',
+    blocage: '',
+  });
 
   const mutation = useMutation({
-    mutationFn: () => apiService.createTask({ ...form, projectId, moduleId }),
-    onSuccess: () => { onSuccess(); onClose(); setForm({ titre: '', assigneeId: '', priorite: 'MOYENNE' }); },
+    mutationFn: () => apiService.createTask({
+      ...form,
+      projectId,
+      moduleId,
+      dateDebut: form.dateDebut || undefined,
+      dateFin: form.dateFin || undefined,
+      situation: form.situation || undefined,
+      blocage: form.blocage || undefined,
+    }),
+    onSuccess: () => {
+      onSuccess();
+      onClose();
+      setForm({ titre: '', assigneeId: '', priorite: 'MOYENNE', dateDebut: '', dateFin: '', situation: '', blocage: '' });
+    },
   });
 
   if (!moduleId) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: 'rgba(26,29,46,0.5)', backdropFilter: 'blur(4px)' }}>
-      <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden" style={{ borderRadius: 24 }}>
+      <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden" style={{ borderRadius: 24 }}>
         <div className="px-8 pt-6 pb-0 flex justify-between items-center">
           <h2 style={{ fontFamily: 'Montserrat', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             Assigner une Tâche
@@ -33,7 +53,7 @@ const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers
 
         <form onSubmit={e => { e.preventDefault(); mutation.mutate(); }} className="px-8 pt-5 pb-8 space-y-4">
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Titre</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Titre *</label>
             <input
               type="text" required autoFocus
               value={form.titre} onChange={e => setForm({ ...form, titre: e.target.value })}
@@ -41,8 +61,9 @@ const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers
               placeholder="Titre de la tâche..."
             />
           </div>
+
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Assigné à</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Assigné à *</label>
             <select
               required
               value={form.assigneeId} onChange={e => setForm({ ...form, assigneeId: e.target.value })}
@@ -52,6 +73,7 @@ const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers
               {projectUsers.map(u => <option key={u.id} value={u.id}>{u.nom}</option>)}
             </select>
           </div>
+
           <div>
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Priorité</label>
             <select
@@ -64,6 +86,46 @@ const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers
               <option value="CRITIQUE">Critique</option>
             </select>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Date début</label>
+              <input
+                type="date"
+                value={form.dateDebut} onChange={e => setForm({ ...form, dateDebut: e.target.value })}
+                className="input-clean"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Date fin</label>
+              <input
+                type="date"
+                value={form.dateFin} onChange={e => setForm({ ...form, dateFin: e.target.value })}
+                className="input-clean"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Situation</label>
+            <input
+              type="text"
+              value={form.situation} onChange={e => setForm({ ...form, situation: e.target.value })}
+              className="input-clean"
+              placeholder="Situation actuelle de la tâche..."
+            />
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Blocage</label>
+            <input
+              type="text"
+              value={form.blocage} onChange={e => setForm({ ...form, blocage: e.target.value })}
+              className="input-clean"
+              placeholder="Point de blocage éventuel..."
+            />
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-ghost flex-1 justify-center">Annuler</button>
             <button type="submit" disabled={mutation.isPending} className="btn-primary flex-1 justify-center disabled:opacity-50">

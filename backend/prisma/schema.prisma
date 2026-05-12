@@ -145,8 +145,10 @@ model Task {
   statut      TaskStatus @default(TODO)
   priorite    Priority   @default(MOYENNE)
 
-  dateDebut DateTime?
-  dateFin   DateTime?
+  dateDebut  DateTime?
+  dateFin    DateTime?
+  situation  String?
+  blocage    String?
 
   assigneeId String?
   createdAt  DateTime @default(now())

@@ -34,6 +34,14 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @IsOptional()
+  @IsString()
+  situation?: string;
+
+  @IsOptional()
+  @IsString()
+  blocage?: string;
 }
 
 export class UpdateTaskDto {
@@ -68,6 +76,22 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateDebut?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateFin?: string;
+
+  @IsOptional()
+  @IsString()
+  situation?: string;
+
+  @IsOptional()
+  @IsString()
+  blocage?: string;
 }
 
 export class CreateCommentDto {

@@ -16,28 +16,28 @@ const avatarColor = (id: string) => AVATAR_COLORS[id.charCodeAt(id.length - 1) %
 
 const STATUS_PROJ: Record<string, { label: string; color: string }> = {
   PREPARATION: { label: 'Préparation', color: '#94a3b8' },
-  EN_COURS:    { label: 'En Cours',    color: '#204e99ff' },
-  CRITIQUE:    { label: 'Critique',    color: '#941111a2' },
-  TERMINE:     { label: 'Terminé',     color: '#1ca54eff' },
+  EN_COURS: { label: 'En Cours', color: '#204e99ff' },
+  CRITIQUE: { label: 'Critique', color: '#941111a2' },
+  TERMINE: { label: 'Terminé', color: '#1ca54eff' },
 };
 const STATUS_TASK: Record<string, { label: string; color: string }> = {
-  TODO:      { label: 'À Faire',   color: '#cbd5e1' },
-  EN_COURS:  { label: 'En Cours',  color: '#3b82f6' },
+  TODO: { label: 'À Faire', color: '#cbd5e1' },
+  EN_COURS: { label: 'En Cours', color: '#3b82f6' },
   EN_REVIEW: { label: 'En Review', color: '#ac5618ff' },
   COMPLETEE: { label: 'Complétée', color: '#1d9248ff' },
-  BLOQUEE:   { label: 'Bloquée',   color: '#881a1aff' },
+  BLOQUEE: { label: 'Bloquée', color: '#881a1aff' },
 };
 const PRIO: Record<string, { label: string; color: string }> = {
-  BASSE:    { label: 'Basse',    color: '#22c55e' },
-  MOYENNE:  { label: 'Moyenne',  color: '#ad5c22ff' },
-  HAUTE:    { label: 'Haute',    color: '#832020ff' },
+  BASSE: { label: 'Basse', color: '#22c55e' },
+  MOYENNE: { label: 'Moyenne', color: '#ad5c22ff' },
+  HAUTE: { label: 'Haute', color: '#832020ff' },
   CRITIQUE: { label: 'Critique', color: '#5224a0ff' },
 };
 const STATUS_INTERV: Record<string, { label: string; color: string; bg: string; dot: string }> = {
   EN_ATTENTE: { label: 'En attente', color: '#D97706', bg: '#FFFBEB', dot: '#F59E0B' },
-  EN_COURS:   { label: 'En cours',   color: '#1D4ED8', bg: '#DBEAFE', dot: '#3B82F6' },
-  RESOLU:     { label: 'Résolu',     color: '#065F46', bg: '#D1FAE5', dot: '#10B981' },
-  ANNULE:     { label: 'Annulé',     color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
+  EN_COURS: { label: 'En cours', color: '#1D4ED8', bg: '#DBEAFE', dot: '#3B82F6' },
+  RESOLU: { label: 'Résolu', color: '#065F46', bg: '#D1FAE5', dot: '#10B981' },
+  ANNULE: { label: 'Annulé', color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
 };
 
 const TOOLTIP_STYLE = {
@@ -48,11 +48,11 @@ const TOOLTIP_STYLE = {
 
 type Period = 'tout' | 'semaine' | 'mois' | 'annee' | 'custom';
 const PERIOD_OPTIONS: { value: Period; label: string }[] = [
-  { value: 'tout',    label: 'Tout' },
+  { value: 'tout', label: 'Tout' },
   { value: 'semaine', label: 'Cette semaine' },
-  { value: 'mois',    label: 'Ce mois' },
-  { value: 'annee',   label: 'Cette année' },
-  { value: 'custom',  label: 'Plage…' },
+  { value: 'mois', label: 'Ce mois' },
+  { value: 'annee', label: 'Cette année' },
+  { value: 'custom', label: 'Plage…' },
 ];
 
 // ── Helpers période ──────────────────────────────────────────────────────────
@@ -81,9 +81,9 @@ const filterByRange = (items: any[], key: string, range: [Date, Date] | null) =>
 
 const mkPoint = (label: string, chunk: any[]) => ({
   label,
-  total:     chunk.length,
-  resolu:    chunk.filter((i: any) => i.statut === 'RESOLU').length,
-  enCours:   chunk.filter((i: any) => i.statut === 'EN_COURS').length,
+  total: chunk.length,
+  resolu: chunk.filter((i: any) => i.statut === 'RESOLU').length,
+  enCours: chunk.filter((i: any) => i.statut === 'EN_COURS').length,
   enAttente: chunk.filter((i: any) => i.statut === 'EN_ATTENTE').length,
 });
 
@@ -203,16 +203,16 @@ const inp = { padding: '6px 12px', borderRadius: 9, border: '1.5px solid #EEF0F6
 const DashboardPage: React.FC = () => {
   const [period, setPeriod] = useState<Period>('tout');
   const [customStart, setCustomStart] = useState('');
-  const [customEnd,   setCustomEnd]   = useState('');
+  const [customEnd, setCustomEnd] = useState('');
 
-  const { data: projects      = [] } = useQuery({ queryKey: ['projects'],      queryFn: () => apiService.getProjects().then(r => r.data) });
-  const { data: tasks         = [] } = useQuery({ queryKey: ['tasks'],         queryFn: () => apiService.getTasks().then(r => r.data) });
-  const { data: users         = [] } = useQuery({ queryKey: ['users'],         queryFn: () => apiService.getUsers().then(r => r.data) });
+  const { data: projects = [] } = useQuery({ queryKey: ['projects'], queryFn: () => apiService.getProjects().then(r => r.data) });
+  const { data: tasks = [] } = useQuery({ queryKey: ['tasks'], queryFn: () => apiService.getTasks().then(r => r.data) });
+  const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: () => apiService.getUsers().then(r => r.data) });
   const { data: interventions = [] } = useQuery({ queryKey: ['interventions'], queryFn: () => apiService.getInterventions().then(r => r.data) });
 
   const range = useMemo(() => getPeriodRange(period, customStart, customEnd), [period, customStart, customEnd]);
 
-  const filteredTasks         = useMemo(() => filterByRange(tasks,         'createdAt', range), [tasks,         range]);
+  const filteredTasks = useMemo(() => filterByRange(tasks, 'createdAt', range), [tasks, range]);
   const filteredInterventions = useMemo(() => filterByRange(interventions, 'createdAt', range), [interventions, range]);
 
   // ── Données projets ──────────────────────────────────────────────────────
@@ -230,10 +230,10 @@ const DashboardPage: React.FC = () => {
   const tasksByUser = users.map((u: any) => ({
     nom: u.nom.length > 12 ? u.nom.slice(0, 10) + '…' : u.nom,
     fullNom: u.nom, id: u.id, photo: u.photo,
-    done:       filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'COMPLETEE').length,
+    done: filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'COMPLETEE').length,
     inProgress: filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'EN_COURS').length,
-    todo:       filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'TODO').length,
-    total:      filteredTasks.filter((t: any) => t.assigneeId === u.id).length,
+    todo: filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'TODO').length,
+    total: filteredTasks.filter((t: any) => t.assigneeId === u.id).length,
   })).filter((u: any) => u.total > 0).sort((a: any, b: any) => b.total - a.total);
 
   const ranking = [...tasksByUser]
@@ -247,17 +247,17 @@ const DashboardPage: React.FC = () => {
   const radarProjects = projects.slice(0, 5);
   const radarData = [
     { metric: 'Progression', ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.round(p.progressionGlobale)])) },
-    { metric: 'Équipe',      ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.min((p.teams?.length ?? 0) * 20, 100)])) },
-    { metric: 'Tâches',      ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.min((p.tasks?.length ?? 0) * 12, 100)])) },
-    { metric: 'Priorité',    ...Object.fromEntries(radarProjects.map((p: any) => [p.id, { BASSE: 25, MOYENNE: 50, HAUTE: 75, CRITIQUE: 100 }[p.priorite as string] ?? 50])) },
+    { metric: 'Équipe', ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.min((p.teams?.length ?? 0) * 20, 100)])) },
+    { metric: 'Tâches', ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.min((p.tasks?.length ?? 0) * 12, 100)])) },
+    { metric: 'Priorité', ...Object.fromEntries(radarProjects.map((p: any) => [p.id, { BASSE: 25, MOYENNE: 50, HAUTE: 75, CRITIQUE: 100 }[p.priorite as string] ?? 50])) },
   ];
 
   // ── Données interventions ────────────────────────────────────────────────
   const intervStats = {
-    total:     filteredInterventions.length,
+    total: filteredInterventions.length,
     enAttente: filteredInterventions.filter((i: any) => i.statut === 'EN_ATTENTE').length,
-    enCours:   filteredInterventions.filter((i: any) => i.statut === 'EN_COURS').length,
-    resolu:    filteredInterventions.filter((i: any) => i.statut === 'RESOLU').length,
+    enCours: filteredInterventions.filter((i: any) => i.statut === 'EN_COURS').length,
+    resolu: filteredInterventions.filter((i: any) => i.statut === 'RESOLU').length,
   };
 
   const intervStatusData = Object.entries(STATUS_INTERV)
@@ -267,10 +267,10 @@ const DashboardPage: React.FC = () => {
   const intervByUser = users.map((u: any) => ({
     nom: u.nom.length > 12 ? u.nom.slice(0, 10) + '…' : u.nom,
     fullNom: u.nom, id: u.id, photo: u.photo,
-    resolu:    filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'RESOLU').length,
-    enCours:   filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'EN_COURS').length,
+    resolu: filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'RESOLU').length,
+    enCours: filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'EN_COURS').length,
     enAttente: filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'EN_ATTENTE').length,
-    total:     filteredInterventions.filter((i: any) => i.intervenantId === u.id).length,
+    total: filteredInterventions.filter((i: any) => i.intervenantId === u.id).length,
   })).filter((u: any) => u.total > 0).sort((a: any, b: any) => b.total - a.total);
 
   const intervRanking = [...intervByUser]
@@ -291,26 +291,20 @@ const DashboardPage: React.FC = () => {
 
       {/* ── Filtre de période ─────────────────────────────────────────────── */}
       <div style={{
-        background: '#fff', borderRadius: 14, border: '1px solid #EEF0F6',
-        padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-        boxShadow: '0 1px 6px rgba(0,0,0,0.04)',
+        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'end',
       }}>
         <span style={{ fontSize: 10, fontWeight: 800, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.12em', flexShrink: 0 }}>
           Période
         </span>
-        <div style={{ display: 'flex', gap: 4, background: '#F3F4F6', borderRadius: 10, padding: 3 }}>
+        <select
+          value={period}
+          onChange={e => setPeriod(e.target.value as Period)}
+          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#374151', cursor: 'pointer', outline: 'none' }}
+        >
           {PERIOD_OPTIONS.map(opt => (
-            <button key={opt.value} onClick={() => setPeriod(opt.value)} style={{
-              padding: '6px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: 11, transition: 'all 0.15s',
-              background: period === opt.value ? '#fff' : 'transparent',
-              color: period === opt.value ? ACCENT : '#9CA3AF',
-              boxShadow: period === opt.value ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            }}>
-              {opt.label}
-            </button>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </div>
+        </select>
         {period === 'custom' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={inp} />
@@ -333,10 +327,10 @@ const DashboardPage: React.FC = () => {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { label: 'Projets Totaux', value: projects.length,                                        color: 'text-slate-900' },
-            { label: 'Tâches',         value: filteredTasks.length,                                   color: 'text-blue-600' },
-            { label: 'Interventions',  value: filteredInterventions.length,                           color: 'text-indigo-600' },
-            { label: 'Membres Équipe', value: users.filter((u: any) => u.statut === 'ACTIF').length,  color: 'text-green-500' },
+            { label: 'Projets Totaux', value: projects.length, color: 'text-slate-900' },
+            { label: 'Tâches', value: filteredTasks.length, color: 'text-blue-600' },
+            { label: 'Interventions', value: filteredInterventions.length, color: 'text-indigo-600' },
+            { label: 'Membres Équipe', value: users.filter((u: any) => u.statut === 'ACTIF').length, color: 'text-green-500' },
           ].map((s, i) => (
             <div key={i} className="premium-card">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">{s.label}</p>
@@ -350,8 +344,8 @@ const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             { title: 'Statuts Projets', data: projStatusData },
-            { title: 'Statuts Tâches',  data: taskStatusData },
-            { title: 'Priorités',       data: prioData },
+            { title: 'Statuts Tâches', data: taskStatusData },
+            { title: 'Priorités', data: prioData },
           ].map(({ title, data }) => (
             <div key={title} className="premium-card">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">{title}</p>
@@ -428,9 +422,9 @@ const DashboardPage: React.FC = () => {
                       <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                       <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="done"       name="Complétées" stackId="a" fill="#22c55e" />
-                      <Bar dataKey="inProgress" name="En Cours"   stackId="a" fill="#3b82f6" />
-                      <Bar dataKey="todo"       name="À Faire"    stackId="a" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="done" name="Complétées" stackId="a" fill="#22c55e" />
+                      <Bar dataKey="inProgress" name="En Cours" stackId="a" fill="#3b82f6" />
+                      <Bar dataKey="todo" name="À Faire" stackId="a" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -603,10 +597,10 @@ const DashboardPage: React.FC = () => {
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           {[
-            { label: 'Total',      value: intervStats.total,     color: 'text-slate-900',   bg: '#F8FAFC', border: '#EEF0F6' },
-            { label: 'En attente', value: intervStats.enAttente, color: 'text-yellow-600',  bg: '#FFFBEB', border: '#FDE68A' },
-            { label: 'En cours',   value: intervStats.enCours,   color: 'text-blue-700',    bg: '#EFF6FF', border: '#BFDBFE' },
-            { label: 'Résolues',   value: intervStats.resolu,    color: 'text-emerald-700', bg: '#F0FDF4', border: '#A7F3D0' },
+            { label: 'Total', value: intervStats.total, color: 'text-slate-900', bg: '#F8FAFC', border: '#EEF0F6' },
+            { label: 'En attente', value: intervStats.enAttente, color: 'text-yellow-600', bg: '#FFFBEB', border: '#FDE68A' },
+            { label: 'En cours', value: intervStats.enCours, color: 'text-blue-700', bg: '#EFF6FF', border: '#BFDBFE' },
+            { label: 'Résolues', value: intervStats.resolu, color: 'text-emerald-700', bg: '#F0FDF4', border: '#A7F3D0' },
           ].map((s, i) => (
             <div key={i} className="premium-card" style={{ background: s.bg, borderColor: s.border }}>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">{s.label}</p>
@@ -652,8 +646,8 @@ const DashboardPage: React.FC = () => {
                       <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                       <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="resolu"    name="Résolues"   stackId="a" fill="#10B981" />
-                      <Bar dataKey="enCours"   name="En cours"   stackId="a" fill="#3B82F6" />
+                      <Bar dataKey="resolu" name="Résolues" stackId="a" fill="#10B981" />
+                      <Bar dataKey="enCours" name="En cours" stackId="a" fill="#3B82F6" />
                       <Bar dataKey="enAttente" name="En attente" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -682,8 +676,8 @@ const DashboardPage: React.FC = () => {
                       <XAxis dataKey="label" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                       <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} allowDecimals={false} />
                       <Tooltip contentStyle={TOOLTIP_STYLE} />
-                      <Bar dataKey="resolu"    name="Résolues"   stackId="a" fill="#10B981" />
-                      <Bar dataKey="enCours"   name="En cours"   stackId="a" fill="#3B82F6" />
+                      <Bar dataKey="resolu" name="Résolues" stackId="a" fill="#10B981" />
+                      <Bar dataKey="enCours" name="En cours" stackId="a" fill="#3B82F6" />
                       <Bar dataKey="enAttente" name="En attente" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>

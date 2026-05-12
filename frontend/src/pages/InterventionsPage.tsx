@@ -305,21 +305,25 @@ const InterventionsPage: React.FC = () => {
           onBlur={e => (e.target.style.borderColor = '#EEF0F6')}
         />
         {/* Période */}
-        <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 10, padding: 3 }}>
+        <select
+          value={period}
+          onChange={e => setPeriod(e.target.value as PeriodF)}
+          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#374151', cursor: 'pointer', outline: 'none' }}
+        >
           {PERIOD_OPTS.map(opt => (
-            <button key={opt.value} onClick={() => setPeriod(opt.value)} style={{ padding: '6px 11px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer', background: period === opt.value ? '#fff' : 'transparent', color: period === opt.value ? '#4F46E5' : '#9CA3AF', boxShadow: period === opt.value ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-              {opt.label}
-            </button>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
-        </div>
+        </select>
         {/* Statut */}
-        <div style={{ display: 'flex', gap: 3, background: '#F3F4F6', borderRadius: 10, padding: 3 }}>
+        <select
+          value={filter}
+          onChange={e => setFilter(e.target.value as typeof FILTERS[number])}
+          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#374151', cursor: 'pointer', outline: 'none' }}
+        >
           {FILTERS.map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{ padding: '6px 11px', borderRadius: 8, border: 'none', fontWeight: 700, fontSize: 11, cursor: 'pointer', background: filter === f ? '#fff' : 'transparent', color: filter === f ? '#4F46E5' : '#9CA3AF', boxShadow: filter === f ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', transition: 'all 0.15s', whiteSpace: 'nowrap' }}>
-              {f === 'Tous' ? 'Tous' : STATUS_CFG[f as keyof typeof STATUS_CFG].label}
-            </button>
+            <option key={f} value={f}>{f === 'Tous' ? 'Tous les statuts' : STATUS_CFG[f as keyof typeof STATUS_CFG].label}</option>
           ))}
-        </div>
+        </select>
         <button onClick={() => setModal('new')} style={{ padding: '9px 20px', borderRadius: 10, border: 'none', background: '#4F46E5', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           + Nouvelle intervention
         </button>

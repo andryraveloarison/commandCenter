@@ -59,6 +59,12 @@ const Icon = {
       <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  calendar: (c = 'currentColor') => (
+    <svg width={17} height={17} fill="none" stroke={c} strokeWidth={1.7} viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   logout: (c = 'currentColor') => (
     <svg width={15} height={15} fill="none" stroke={c} strokeWidth={1.7} viewBox="0 0 24 24">
       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />
@@ -77,6 +83,7 @@ const mainNav = [
   { path: '/dashboard', label: 'Tableau de bord', icon: 'dashboard' },
   { path: '/war-room', label: 'Centre Technique', icon: 'warroom' },
   { path: '/projects', label: 'Projets', icon: 'projects' },
+  { path: '/calendar', label: 'Calendrier', icon: 'calendar' },
   { path: '/interventions', label: 'Interventions', icon: 'wrench' },
   { path: '/users', label: 'Équipe', icon: 'users' },
   { path: '/messages', label: 'Messages', icon: 'messages' },
@@ -87,6 +94,7 @@ const pageTitles: Record<string, string> = {
   '/dashboard': 'Tableau de bord',
   '/war-room': 'Centre Technique',
   '/projects': 'Projets',
+  '/calendar': 'Calendrier',
   '/interventions': 'Interventions',
   '/users': 'Équipe',
   '/messages': 'Messages',
@@ -353,10 +361,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: SIDEBAR_W - 20 }}>
           <div style={{
-            width: 36, height: 36, borderRadius: 9, background: '#1A1D2E',
+            width: 36, height: 36, borderRadius: 9,
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
-            <span style={{ color: '#fff', fontWeight: 900, fontSize: 16, fontFamily: 'Montserrat, sans-serif' }}>D</span>
+            <img src="/logo.png" alt="Logo" style={{ height: 80, objectFit: 'contain', filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }} />
           </div>
           <div>
             <p style={{ fontWeight: 800, fontSize: 14.5, color: '#1A1D2E', margin: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }}>Command</p>

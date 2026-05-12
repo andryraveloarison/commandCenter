@@ -58,6 +58,8 @@ export interface Task {
   priorite: 'BASSE' | 'MOYENNE' | 'HAUTE' | 'CRITIQUE';
   dateDebut?: string;
   dateFin?: string;
+  situation?: string;
+  blocage?: string;
   assigneeId?: string;
   assignee?: User;
   createdAt: string;

@@ -5,6 +5,7 @@ import Layout from '@components/Layout';
 import { useAppSelector, useAppDispatch } from '@hooks/useAppRedux';
 import apiService from '@services/api';
 import { setUser, setLoading, logout } from '@store/slices/authSlice';
+import LoginPage from './pages/LoginPage';
 
 const App = () => {
   const location = useLocation();
@@ -38,7 +39,7 @@ const App = () => {
   }
 
   if (!isAuthenticated && !isLoginPage) {
-    return <Router />;
+    return <LoginPage />;
   }
 
   return (
