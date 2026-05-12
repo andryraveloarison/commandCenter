@@ -1,10 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateProjectDto, UpdateProjectDto, AddTeamMemberDto } from './dto/project.dto';
 
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
+
+  private async assertProjectMember(projectId: string, userId: string, userRole: string) {
+    if (userRole === 'DSI') return;
+    const member = await this.prisma.projectTeam.findFirst({
+      where: { projectId, userId },
+    });
+    if (!member) {
+      throw new ForbiddenException("Vous n'êtes pas membre de ce projet.");
+    }
+  }
 
   async create(dto: CreateProjectDto, userId: string) {
     const project = await this.prisma.project.create({
@@ -102,7 +112,16 @@ export class ProjectsService {
     });
   }
 
-  async addTeamMember(projectId: string, dto: AddTeamMemberDto) {
+  async addTeamMember(projectId: string, dto: AddTeamMemberDto, requesterId: string, requesterRole: string) {
+    await this.assertProjectMember(projectId, requesterId, requesterRole);
+
+    const alreadyMember = await this.prisma.projectTeam.findFirst({
+      where: { projectId, userId: dto.userId },
+    });
+    if (alreadyMember) {
+      throw new ForbiddenException('Cet utilisateur est déjà membre du projet.');
+    }
+
     return this.prisma.projectTeam.create({
       data: {
         projectId,

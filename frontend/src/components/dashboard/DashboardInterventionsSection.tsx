@@ -1,0 +1,236 @@
+import React from 'react';
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { TOOLTIP_STYLE, STATUS_INTERV, avatarColor, fmtDate } from './dashboardTypes';
+import DashboardSectionHeader from './DashboardSectionHeader';
+import DashboardDonutLabel from './DashboardDonutLabel';
+import DashboardLegend from './DashboardLegend';
+import DashboardEmpty from './DashboardEmpty';
+
+interface IntervStats {
+  total: number;
+  enAttente: number;
+  enCours: number;
+  resolu: number;
+}
+
+interface Props {
+  filteredInterventions: any[];
+  intervStats: IntervStats;
+  intervStatusData: { label: string; color: string; value: number }[];
+  intervByUser: any[];
+  intervRanking: any[];
+  intervEvolution: any[];
+  recentInterventions: any[];
+}
+
+const LEGEND_INTERV = [
+  { label: 'Résolues',   color: '#10B981' },
+  { label: 'En cours',   color: '#3B82F6' },
+  { label: 'En attente', color: '#F59E0B' },
+];
+
+const DashboardInterventionsSection: React.FC<Props> = ({
+  intervStats, intervStatusData, intervByUser,
+  intervRanking, intervEvolution, recentInterventions,
+}) => (
+  <div className="space-y-8">
+    <DashboardSectionHeader label="Support IT" title="Interventions" linkTo="/interventions" linkLabel="Voir toutes les interventions" />
+
+    {/* Stat cards */}
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      {[
+        { label: 'Total',       value: intervStats.total,     color: 'text-slate-900',   bg: '#F8FAFC', border: '#EEF0F6' },
+        { label: 'En attente',  value: intervStats.enAttente, color: 'text-yellow-600',  bg: '#FFFBEB', border: '#FDE68A' },
+        { label: 'En cours',    value: intervStats.enCours,   color: 'text-blue-700',    bg: '#EFF6FF', border: '#BFDBFE' },
+        { label: 'Résolues',    value: intervStats.resolu,    color: 'text-emerald-700', bg: '#F0FDF4', border: '#A7F3D0' },
+      ].map((s, i) => (
+        <div key={i} className="premium-card" style={{ background: s.bg, borderColor: s.border }}>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">{s.label}</p>
+          <p className={`text-5xl font-black ${s.color} font-mono tracking-tighter leading-none`}>
+            {s.value.toString().padStart(2, '0')}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    {/* Donut + bar by technician */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="premium-card">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Répartition statuts</p>
+        {intervStatusData.length > 0 ? (
+          <>
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={intervStatusData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" labelLine={false} label={DashboardDonutLabel}>
+                    {intervStatusData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <DashboardLegend items={intervStatusData} />
+          </>
+        ) : <div className="h-[200px]"><DashboardEmpty /></div>}
+      </div>
+
+      <div className="lg:col-span-2 premium-card">
+        <div className="mb-6">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Charge de travail</p>
+          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Interventions par Technicien</h2>
+        </div>
+        {intervByUser.length > 0 ? (
+          <>
+            <div className="h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={intervByUser} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
+                  <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Bar dataKey="resolu"    name="Résolues"    stackId="a" fill="#10B981" />
+                  <Bar dataKey="enCours"   name="En cours"    stackId="a" fill="#3B82F6" />
+                  <Bar dataKey="enAttente" name="En attente"  stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <DashboardLegend items={LEGEND_INTERV} />
+          </>
+        ) : <div className="h-[220px]"><DashboardEmpty /></div>}
+      </div>
+    </div>
+
+    {/* Evolution + Top technician */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 premium-card">
+        <div className="mb-6">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historique</p>
+          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Évolution des Interventions</h2>
+        </div>
+        {intervEvolution.some((d: any) => d.total > 0) ? (
+          <>
+            <div className="h-[230px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={intervEvolution} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="label" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
+                  <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} allowDecimals={false} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Bar dataKey="resolu"    name="Résolues"   stackId="a" fill="#10B981" />
+                  <Bar dataKey="enCours"   name="En cours"   stackId="a" fill="#3B82F6" />
+                  <Bar dataKey="enAttente" name="En attente" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <DashboardLegend items={LEGEND_INTERV} />
+          </>
+        ) : <div className="h-[230px]"><DashboardEmpty /></div>}
+      </div>
+
+      <div className="premium-card">
+        <div className="mb-5">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classement IT</p>
+          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Top Techniciens</h2>
+        </div>
+        {intervRanking.length > 0 ? (
+          <div className="space-y-4">
+            {intervRanking.slice(0, 5).map((u: any, i: number) => (
+              <div key={u.id} className="flex items-center gap-3">
+                <span className={`text-[11px] font-black w-5 text-center flex-shrink-0 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-orange-400' : 'text-slate-200'}`}>#{i + 1}</span>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[9px] font-black text-white flex-shrink-0 overflow-hidden" style={{ backgroundColor: avatarColor(u.id) }}>
+                  {u.photo ? <img src={u.photo} className="w-full h-full object-cover" alt="" /> : u.fullNom[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-black text-slate-900 uppercase truncate">{u.fullNom}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${u.rate}%` }} />
+                    </div>
+                    <span className="text-[9px] font-black font-mono text-slate-400 flex-shrink-0">{u.rate}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : <div className="h-[200px]"><DashboardEmpty /></div>}
+        {intervRanking.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-slate-50 space-y-2">
+            <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Taux de résolution global</p>
+            <div className="flex justify-between text-xs font-black text-slate-700">
+              <span>{intervStats.resolu} résolues</span>
+              <span>{intervStats.total} total</span>
+            </div>
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div className="h-full rounded-full bg-emerald-500"
+                style={{ width: intervStats.total > 0 ? `${Math.round((intervStats.resolu / intervStats.total) * 100)}%` : '0%' }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Recent interventions table */}
+    <div>
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Historique</p>
+          <h2 className="text-xl font-black font-montserrat uppercase tracking-tight leading-none text-slate-900">Dernières Interventions</h2>
+        </div>
+      </div>
+      <div className="premium-card overflow-hidden p-0">
+        {recentInterventions.length === 0 ? (
+          <div className="p-10 text-center text-slate-300 text-[10px] font-black uppercase tracking-widest">Aucune intervention sur cette période</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #EEF0F6' }}>
+                {['Date', 'Problème', 'Site', 'Demandeur', 'Intervenant', 'Statut'].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {recentInterventions.map((iv: any, idx: number) => {
+                const sc = STATUS_INTERV[iv.statut as keyof typeof STATUS_INTERV];
+                return (
+                  <tr key={iv.id} style={{ borderBottom: idx < recentInterventions.length - 1 ? '1px solid #F5F7FA' : 'none' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFF')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                    <td style={{ padding: '12px 16px', fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap' }}>{fmtDate(iv.dateIntervention || iv.createdAt)}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, color: '#374151', maxWidth: 220 }}>
+                      <span style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{iv.probleme}</span>
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>{iv.site?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, color: '#374151' }}>{iv.demandeur?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      {iv.intervenant ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
+                            {iv.intervenant.photo ? <img src={iv.intervenant.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : iv.intervenant.nom[0]}
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenant.nom}</span>
+                        </div>
+                      ) : <span style={{ color: '#D1D5DB', fontSize: 11 }}>—</span>}
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 99, background: sc?.bg, color: sc?.color, fontSize: 10, fontWeight: 700 }}>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: sc?.dot, display: 'block' }} />
+                        {sc?.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+export default DashboardInterventionsSection;

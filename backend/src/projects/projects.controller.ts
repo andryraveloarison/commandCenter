@@ -69,8 +69,8 @@ export class ProjectsController {
 
   @Post(':id/team')
   @ApiOperation({ summary: 'Add team member to project' })
-  async addTeamMember(@Param('id') projectId: string, @Body() dto: AddTeamMemberDto) {
-    return this.projectsService.addTeamMember(projectId, dto);
+  async addTeamMember(@Param('id') projectId: string, @Body() dto: AddTeamMemberDto, @Request() req) {
+    return this.projectsService.addTeamMember(projectId, dto, req.user.id, req.user.role);
   }
 
   @Delete(':id/team/:userId')

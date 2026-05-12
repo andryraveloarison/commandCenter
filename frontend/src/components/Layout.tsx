@@ -83,8 +83,8 @@ const mainNav = [
   { path: '/dashboard', label: 'Tableau de bord', icon: 'dashboard' },
   { path: '/war-room', label: 'Centre Technique', icon: 'warroom' },
   { path: '/projects', label: 'Projets', icon: 'projects' },
-  { path: '/calendar', label: 'Calendrier', icon: 'calendar' },
   { path: '/interventions', label: 'Interventions', icon: 'wrench' },
+  { path: '/calendar', label: 'Calendrier', icon: 'calendar' },
   { path: '/users', label: 'Équipe', icon: 'users' },
   { path: '/messages', label: 'Messages', icon: 'messages' },
 ];

@@ -8,13 +8,13 @@ services:
       POSTGRES_PASSWORD: CommandCenter2026
       POSTGRES_DB: commandcenter
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - commandcenter-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U commandcenter" ]
+      test: ["CMD-SHELL", "pg_isready -U commandcenter"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,8 +30,8 @@ services:
       JWT_SECRET: command-center-secret-key-military-operations
       JWT_EXPIRATION: 7d
       NODE_ENV: development
-      BACKEND_URL: http://localhost:3000
-      FRONTEND_URL: http://localhost:5173
+      PORT: 3000
+      FRONTEND_URL: http://${SERVER_HOST:-localhost}:5173
       CHOKIDAR_USEPOLLING: "true"
     ports:
       - "3000:3000"
@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     container_name: commandcenter-web
     environment:
-      VITE_API_URL: http://localhost:3000/api
+      VITE_API_URL: http://${SERVER_HOST:-localhost}:3000/api
       CHOKIDAR_USEPOLLING: "true"
     ports:
       - "5173:5173"
@@ -63,7 +63,7 @@ services:
       - /app/node_modules
     networks:
       - commandcenter-network
-    command: npm run dev
+    command: npm run dev -- --host
 
 volumes:
   postgres_data:

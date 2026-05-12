@@ -25,7 +25,7 @@ export class TasksController {
   @Post()
   @ApiOperation({ summary: 'Create new task' })
   async create(@Body() dto: CreateTaskDto, @Request() req) {
-    return this.tasksService.create(dto, req.user.id);
+    return this.tasksService.create(dto, req.user.id, req.user.role);
   }
 
   @Get()

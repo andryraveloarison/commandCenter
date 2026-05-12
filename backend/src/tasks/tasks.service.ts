@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from './dto/task.dto';
 
@@ -12,7 +12,21 @@ const subtaskInclude = (depth = 3): any => ({
 export class TasksService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateTaskDto, userId?: string) {
+  private async assertProjectMember(projectId: string, userId: string, userRole: string) {
+    if (userRole === 'DSI') return;
+    const member = await this.prisma.projectTeam.findFirst({
+      where: { projectId, userId },
+    });
+    if (!member) {
+      throw new ForbiddenException("Vous n'êtes pas membre de ce projet.");
+    }
+  }
+
+  async create(dto: CreateTaskDto, userId?: string, userRole?: string) {
+    if (userId && userRole) {
+      await this.assertProjectMember(dto.projectId, userId, userRole);
+    }
+
     const task = await this.prisma.task.create({
       data: {
         projectId: dto.projectId,

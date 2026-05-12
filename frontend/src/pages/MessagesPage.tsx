@@ -49,17 +49,16 @@ const fmtDate = (iso: string) => {
 };
 
 /* ── Read receipts (group only) ─────────────────────────────────────────── */
-const ReadReceipts: React.FC<{ reads: { id: string; user: UserBrief }[]; authorId: string; align: 'left'|'right' }> = ({ reads, authorId, align }) => {
-  const list = reads.filter(r => r.user.id !== authorId);
-  if (!list.length) return null;
+const ReadReceipts: React.FC<{ users: UserBrief[]; align: 'left'|'right' }> = ({ users, align }) => {
+  if (!users.length) return null;
   return (
     <div style={{ display: 'flex', gap: 2, justifyContent: align === 'right' ? 'flex-end' : 'flex-start', marginTop: 3 }}>
-      {list.slice(0, 5).map((r, i) => (
-        <div key={r.id} title={`Lu par ${r.user.nom}`} style={{ marginLeft: i ? -5 : 0 }}>
-          <Av user={r.user} size={14} />
+      {users.slice(0, 5).map((u, i) => (
+        <div key={u.id} title={`Lu par ${u.nom}`} style={{ marginLeft: i ? -5 : 0 }}>
+          <Av user={u} size={14} />
         </div>
       ))}
-      {list.length > 5 && <span style={{ fontSize: 9, color: '#9CA3AF', fontWeight: 600, marginLeft: 2 }}>+{list.length - 5}</span>}
+      {users.length > 5 && <span style={{ fontSize: 9, color: '#9CA3AF', fontWeight: 600, marginLeft: 2 }}>+{users.length - 5}</span>}
     </div>
   );
 };
@@ -262,6 +261,25 @@ const MessagesPage: React.FC = () => {
 
   const activePartner = view !== 'group' ? allUsers.find(u => u.id === view) || conversations.find(c => c.partner.id === view)?.partner : null;
 
+  // For each user, track the ID of the last group message they've read
+  const lastReadByUser: Record<string, { msgId: string; user: UserBrief }> = {};
+  for (const msg of groupMessages) {
+    for (const r of msg.reads) {
+      if (r.user.id !== me?.id) {
+        lastReadByUser[r.user.id] = { msgId: msg.id, user: r.user };
+      }
+    }
+  }
+
+  // For DMs: ID of the last message sent by me that the partner has read
+  const lastDmReadId = (() => {
+    let id: string | null = null;
+    for (const msg of dmMessages) {
+      if ((msg as DmMessage).sender.id === me?.id && (msg as DmMessage).lu) id = msg.id;
+    }
+    return id;
+  })();
+
   return (
     <>
       {showPicker && <UserPicker users={allUsers} onSelect={startDm} onClose={() => setShowPicker(false)} />}
@@ -431,9 +449,12 @@ const MessagesPage: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, flexDirection: isMine ? 'row-reverse' : 'row' }}>
                           <span style={{ fontSize: 10, color: '#C4C9D4', fontWeight: 500, padding: '0 2px' }}>{fmtTime(msg.createdAt)}</span>
                           {view === 'group' && isMine && (
-                            <ReadReceipts reads={(msg as GroupMessage).reads} authorId={me?.id || ''} align="right" />
+                            <ReadReceipts
+                              users={Object.values(lastReadByUser).filter(v => v.msgId === msg.id).map(v => v.user)}
+                              align="right"
+                            />
                           )}
-                          {view !== 'group' && isMine && (msg as DmMessage).lu && (
+                          {view !== 'group' && isMine && msg.id === lastDmReadId && (
                             <span style={{ fontSize: 10, color: '#818CF8', fontWeight: 600 }}>✓ Lu</span>
                           )}
                         </div>
