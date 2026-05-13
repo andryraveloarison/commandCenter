@@ -31,7 +31,7 @@ services:
       JWT_EXPIRATION: 7d
       NODE_ENV: development
       PORT: 3000
-      FRONTEND_URL: http://${SERVER_HOST:-localhost}:5173
+      FRONTEND_URL: http://${SERVER_HOST:-localhost}:5174
       CHOKIDAR_USEPOLLING: "true"
     ports:
       - "3000:3000"

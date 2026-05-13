@@ -72,7 +72,26 @@ const LoginPage: React.FC = () => {
       dispatch(setUser(profile.data));
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur d\'authentification');
+      if (!err.response) {
+        setError('Erreur réseau — vérifiez votre connexion.');
+      } else {
+        const msg: string = Array.isArray(err.response?.data?.message)
+          ? err.response.data.message[0]
+          : (err.response?.data?.message ?? '');
+        if (msg.toLowerCase().includes('email')) {
+          setError('Aucun compte associé à cet email.');
+        } else if (msg.toLowerCase().includes('mot de passe') || msg.toLowerCase().includes('password')) {
+          setError('Mot de passe incorrect.');
+        } else if (msg.toLowerCase().includes('compte') || msg.toLowerCase().includes('aucun')) {
+          setError('Aucun compte associé à cet email.');
+        } else if (err.response.status === 401) {
+          setError('Email ou mot de passe incorrect.');
+        } else if (err.response.status >= 500) {
+          setError('Erreur serveur — réessayez dans un moment.');
+        } else {
+          setError(msg || 'Erreur d\'authentification.');
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -123,7 +142,7 @@ const LoginPage: React.FC = () => {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px 48px' }}>
 
         {/* Logo */}
-        <img src="/logo.png" alt="Logo" style={{ height: 80, objectFit: 'contain', marginBottom: 28, filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }} />
+        <img src="/logo.png" alt="Logo" style={{ height: 120, objectFit: 'contain', marginBottom: 28, filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }} />
 
         {/* Hero title */}
         <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(2.2rem, 5vw, 3.6rem)', fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
@@ -132,12 +151,12 @@ const LoginPage: React.FC = () => {
             Center
           </em>
         </h1>
-        <p style={{ margin: '0 0 36px', fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 340, lineHeight: 1.6 }}>
+        <p style={{ margin: '0 0 36px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', textAlign: 'center', maxWidth: 440, lineHeight: 1.6 }}>
           Système de gestion de projet IT du groupe Futurama.
         </p>
 
         {/* Form card */}
-        <div style={{ width: '100%', maxWidth: 400, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '32px 28px' }}>
+        <div style={{ width: '100%', maxWidth: 400, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: '22px 28px' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
               <label style={LABEL}>Email</label>
@@ -152,10 +171,10 @@ const LoginPage: React.FC = () => {
             {!isLogin && (
               <>
                 <div>
-                  <label style={LABEL}>Nom d&rsquo;utilisateur</label>
+                  <label style={LABEL}>Nom de code</label>
                   <input
                     type="text" name="username" value={formData.username} onChange={handleChange}
-                    placeholder="pseudo_dsi" required style={INP}
+                    placeholder="pseudo" required style={INP}
                     onFocus={e => (e.target.style.borderColor = 'rgba(255,255,255,0.45)')}
                     onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.18)')}
                   />
@@ -206,9 +225,6 @@ const LoginPage: React.FC = () => {
           </form>
         </div>
 
-        <p style={{ marginTop: 32, fontSize: 10, color: 'rgba(255,255,255,0.2)', fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase' }}>
-          Propriété de la DSI &copy; 2026
-        </p>
       </main>
     </div>
   );
