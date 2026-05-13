@@ -54,7 +54,7 @@ services:
     environment:
       DATABASE_URL: postgresql://commandcenter:CommandCenter2026@postgres:5432/commandcenter
     ports:
-      - "5556:5556"
+      - "5557:5556"
     depends_on:
       postgres:
         condition: service_healthy
