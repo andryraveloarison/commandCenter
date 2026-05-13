@@ -207,12 +207,23 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                     <td style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>{iv.site?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
                     <td style={{ padding: '12px 16px', fontSize: 12, color: '#374151' }}>{iv.demandeur?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
                     <td style={{ padding: '12px 16px' }}>
-                      {iv.intervenant ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
-                            {iv.intervenant.photo ? <img src={iv.intervenant.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : iv.intervenant.nom[0]}
+                      {iv.intervenants?.length > 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <div style={{ display: 'flex' }}>
+                            {iv.intervenants.slice(0, 3).map((ir: any, i: number) => (
+                              <div key={ir.user.id} title={ir.user.nom} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
+                                {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.nom[0]}
+                              </div>
+                            ))}
+                            {iv.intervenants.length > 3 && (
+                              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#EEF2FF', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#4F46E5', marginLeft: -10 }}>
+                                +{iv.intervenants.length - 3}
+                              </div>
+                            )}
                           </div>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenant.nom}</span>
+                          {iv.intervenants.length === 1 && (
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenants[0].user.nom}</span>
+                          )}
                         </div>
                       ) : <span style={{ color: '#D1D5DB', fontSize: 11 }}>—</span>}
                     </td>

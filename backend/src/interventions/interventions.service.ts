@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 
 const INCLUDE = {
-  intervenant: { select: { id: true, nom: true, photo: true, role: true } },
-  demandeur:   { include: { site: true } },
-  site:        true,
+  intervenants: {
+    include: { user: { select: { id: true, nom: true, photo: true, role: true } } },
+  },
+  demandeur: { include: { site: true } },
+  site:      true,
 } as const;
 
 @Injectable()
@@ -22,46 +24,64 @@ export class InterventionsService {
     return this.prisma.intervention.findUnique({ where: { id }, include: INCLUDE });
   }
 
-  create(data: {
+  async create(data: {
     probleme: string;
     solution?: string;
     statut?: string;
     dateIntervention?: string;
-    intervenantId?: string;
+    intervenantIds?: string[];
     demandeurId?: string;
     siteId?: string;
   }) {
-    const { dateIntervention, statut, ...rest } = data;
+    const { dateIntervention, statut, intervenantIds, ...rest } = data;
     return this.prisma.intervention.create({
       data: {
         ...rest,
         ...(statut && { statut: statut as any }),
         ...(dateIntervention && { dateIntervention: new Date(dateIntervention) }),
+        ...(intervenantIds?.length && {
+          intervenants: {
+            create: intervenantIds.map((userId) => ({ userId })),
+          },
+        }),
       },
       include: INCLUDE,
     });
   }
 
-  update(id: string, data: {
+  async update(id: string, data: {
     probleme?: string;
     solution?: string;
     statut?: string;
     dateIntervention?: string | null;
-    intervenantId?: string | null;
+    intervenantIds?: string[] | null;
     demandeurId?: string | null;
     siteId?: string | null;
   }) {
-    const { dateIntervention, statut, ...rest } = data;
-    return this.prisma.intervention.update({
-      where: { id },
-      data: {
-        ...rest,
-        ...(statut && { statut: statut as any }),
-        ...(dateIntervention !== undefined && {
-          dateIntervention: dateIntervention ? new Date(dateIntervention) : null,
-        }),
-      },
-      include: INCLUDE,
+    const { dateIntervention, statut, intervenantIds, ...rest } = data;
+
+    return this.prisma.$transaction(async (tx) => {
+      if (intervenantIds !== undefined) {
+        await tx.interventionIntervenant.deleteMany({ where: { interventionId: id } });
+        if (intervenantIds && intervenantIds.length > 0) {
+          await tx.interventionIntervenant.createMany({
+            data: intervenantIds.map((userId) => ({ interventionId: id, userId })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      return tx.intervention.update({
+        where: { id },
+        data: {
+          ...rest,
+          ...(statut && { statut: statut as any }),
+          ...(dateIntervention !== undefined && {
+            dateIntervention: dateIntervention ? new Date(dateIntervention) : null,
+          }),
+        },
+        include: INCLUDE,
+      });
     });
   }
 

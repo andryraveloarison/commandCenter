@@ -39,12 +39,21 @@ const CalendarInterventionPanel: React.FC<Props> = ({ iv, onClose }) => {
           </div>
         </div>
 
-        {iv.intervenant && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, padding: '10px 14px', background: '#F9FAFB', borderRadius: 12 }}>
-            <CalendarAvatar user={iv.intervenant} size={36} />
-            <div>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1A1D2E' }}>{iv.intervenant.nom}</p>
-              <p style={{ margin: '2px 0 0', fontSize: 10, color: '#9CA3AF' }}>{iv.intervenant.role}</p>
+        {iv.intervenants?.length > 0 && (
+          <div style={{ marginBottom: 12, padding: '10px 14px', background: '#F9FAFB', borderRadius: 12 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px' }}>
+              Intervenant{iv.intervenants.length > 1 ? 's' : ''}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {iv.intervenants.map(ir => (
+                <div key={ir.user.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <CalendarAvatar user={ir.user} size={30} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1A1D2E' }}>{ir.user.nom}</p>
+                    <p style={{ margin: '1px 0 0', fontSize: 10, color: '#9CA3AF' }}>{ir.user.role}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}

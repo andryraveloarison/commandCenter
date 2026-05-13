@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ChatGateway } from '../chat/chat.gateway';
 
-const USER_SELECT = { select: { id: true, nom: true, photo: true } };
+const USER_SELECT = { select: { id: true, nom: true, username: true, photo: true } };
 
 @Injectable()
 export class DirectMessagesService {

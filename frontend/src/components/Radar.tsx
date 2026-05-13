@@ -119,29 +119,29 @@ const Radar: React.FC<RadarProps> = ({ users = [], size = 300 }) => {
                 style={{ cursor: 'pointer' }}
               >
                 {/* Outer ping ring */}
-                <circle cx={x} cy={y} r="16" fill="none" stroke="#0f172a" strokeWidth="1" opacity={isHovered ? 0.3 : 0.12} />
+                <circle cx={x} cy={y} r="20" fill="none" stroke="#0f172a" strokeWidth="1" opacity={isHovered ? 0.3 : 0.12} />
 
                 {/* Photo or initials */}
                 {user.photo ? (
                   <>
                     <defs>
                       <clipPath id={`rclip-${user.id}`}>
-                        <circle cx={x} cy={y} r="9" />
+                        <circle cx={x} cy={y} r="13" />
                       </clipPath>
                     </defs>
-                    <circle cx={x} cy={y} r="9" fill="#e2e8f0" stroke={isHovered ? '#0f172a' : 'white'} strokeWidth="2" />
+                    <circle cx={x} cy={y} r="13" fill="#e2e8f0" stroke={isHovered ? '#0f172a' : 'white'} strokeWidth="2" />
                     <image
                       href={user.photo}
-                      x={x - 9} y={y - 9}
-                      width="18" height="18"
+                      x={x - 13} y={y - 13}
+                      width="26" height="26"
                       clipPath={`url(#rclip-${user.id})`}
                       preserveAspectRatio="xMidYMid slice"
                     />
                   </>
                 ) : (
                   <>
-                    <circle cx={x} cy={y} r="9" fill={isHovered ? '#0f172a' : '#334155'} stroke="white" strokeWidth="2" />
-                    <text x={x} y={y + 3.5} textAnchor="middle" fill="white" fontSize="7" fontWeight="bold" fontFamily="sans-serif">
+                    <circle cx={x} cy={y} r="13" fill={isHovered ? '#0f172a' : '#334155'} stroke="white" strokeWidth="2" />
+                    <text x={x} y={y + 4.5} textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
                       {user.nom[0]?.toUpperCase()}
                     </text>
                   </>

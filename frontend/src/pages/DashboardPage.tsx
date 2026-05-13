@@ -83,15 +83,18 @@ const DashboardPage: React.FC = () => {
     .map(([k, v]) => ({ label: v.label, color: v.dot, value: filteredInterventions.filter((i: any) => i.statut === k).length }))
     .filter(d => d.value > 0);
 
+  const isIntervenant = (intervention: any, userId: string) =>
+    intervention.intervenants?.some((iv: any) => iv.user?.id === userId) ?? false;
+
   const intervByUser = users.map((u: any) => ({
     nom:       u.nom.length > 12 ? u.nom.slice(0, 10) + '…' : u.nom,
     fullNom:   u.nom,
     id:        u.id,
     photo:     u.photo,
-    resolu:    filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'RESOLU').length,
-    enCours:   filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'EN_COURS').length,
-    enAttente: filteredInterventions.filter((i: any) => i.intervenantId === u.id && i.statut === 'EN_ATTENTE').length,
-    total:     filteredInterventions.filter((i: any) => i.intervenantId === u.id).length,
+    resolu:    filteredInterventions.filter((i: any) => isIntervenant(i, u.id) && i.statut === 'RESOLU').length,
+    enCours:   filteredInterventions.filter((i: any) => isIntervenant(i, u.id) && i.statut === 'EN_COURS').length,
+    enAttente: filteredInterventions.filter((i: any) => isIntervenant(i, u.id) && i.statut === 'EN_ATTENTE').length,
+    total:     filteredInterventions.filter((i: any) => isIntervenant(i, u.id)).length,
   })).filter((u: any) => u.total > 0).sort((a: any, b: any) => b.total - a.total);
 
   const intervRanking = [...intervByUser]

@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { ChatGateway } from './chat.gateway';
 
-const READS_SELECT = {
-  include: { user: { select: { id: true, nom: true, photo: true } } },
-};
+const MESSAGE_INCLUDE = {
+  user:  { select: { id: true, nom: true, username: true, photo: true } },
+  reads: { include: { user: { select: { id: true, nom: true, username: true, photo: true } } } },
+  poll:  { include: { votes: true } },
+} as const;
 
 @Injectable()
 export class ChatService {
@@ -14,16 +16,13 @@ export class ChatService {
     return this.prisma.message.findMany({
       take: 100,
       orderBy: { createdAt: 'asc' },
-      include: {
-        user: { select: { id: true, nom: true, photo: true } },
-        reads: READS_SELECT,
-      },
+      include: MESSAGE_INCLUDE,
     });
   }
 
   async getUnreadCount(userId: string) {
     const total = await this.prisma.message.count();
-    const read = await this.prisma.messageRead.count({ where: { userId } });
+    const read  = await this.prisma.messageRead.count({ where: { userId } });
     return { count: Math.max(0, total - read) };
   }
 
@@ -32,7 +31,7 @@ export class ChatService {
     await Promise.all(
       messages.map((m) =>
         this.prisma.messageRead.upsert({
-          where: { messageId_userId: { messageId: m.id, userId } },
+          where:  { messageId_userId: { messageId: m.id, userId } },
           create: { messageId: m.id, userId },
           update: {},
         }),
@@ -40,7 +39,7 @@ export class ChatService {
     );
     await this.prisma.notification.updateMany({
       where: { userId, type: 'MESSAGE', lu: false },
-      data: { lu: true },
+      data:  { lu: true },
     });
     return { success: true };
   }
@@ -48,35 +47,63 @@ export class ChatService {
   async create(userId: string, contenu: string) {
     const message = await this.prisma.message.create({
       data: { userId, contenu },
-      include: {
-        user: { select: { id: true, nom: true, photo: true } },
-        reads: READS_SELECT,
-      },
+      include: MESSAGE_INCLUDE,
     });
 
-    // Sender auto-marks as read
     await this.prisma.messageRead.create({ data: { messageId: message.id, userId } });
 
-    // Create notifications for all other users
+    await this._notifyOthers(userId, message.user.nom, contenu);
+    this.gateway.emitGroupMessage(message);
+    return message;
+  }
+
+  async createPoll(userId: string, question: string, options: string[]) {
+    const poll = await this.prisma.poll.create({
+      data: { question, options },
+    });
+
+    const message = await this.prisma.message.create({
+      data: { userId, contenu: question, type: 'POLL', pollId: poll.id },
+      include: MESSAGE_INCLUDE,
+    });
+
+    await this.prisma.messageRead.create({ data: { messageId: message.id, userId } });
+
+    await this._notifyOthers(userId, message.user.nom, `Sondage : ${question}`);
+    this.gateway.emitGroupMessage(message);
+    return message;
+  }
+
+  async votePoll(pollId: string, userId: string, optionIndex: number) {
+    await this.prisma.pollVote.upsert({
+      where:  { pollId_userId: { pollId, userId } },
+      create: { pollId, userId, optionIndex },
+      update: { optionIndex },
+    });
+
+    const poll = await this.prisma.poll.findUnique({
+      where:   { id: pollId },
+      include: { votes: true },
+    });
+
+    this.gateway.emitPollUpdate(poll);
+    return poll;
+  }
+
+  private async _notifyOthers(senderId: string, senderNom: string, preview: string) {
     const others = await this.prisma.user.findMany({
-      where: { id: { not: userId } },
+      where:  { id: { not: senderId } },
       select: { id: true },
     });
-    if (others.length > 0) {
-      const preview = contenu.length > 60 ? contenu.substring(0, 60) + '…' : contenu;
-      await this.prisma.notification.createMany({
-        data: others.map((u) => ({
-          userId: u.id,
-          titre: `Nouveau message de ${message.user.nom}`,
-          message: preview,
-          type: 'MESSAGE',
-        })),
-      });
-    }
-
-    // Broadcast to all connected WebSocket clients
-    this.gateway.emitGroupMessage(message);
-
-    return message;
+    if (!others.length) return;
+    const text = preview.length > 60 ? preview.substring(0, 60) + '…' : preview;
+    await this.prisma.notification.createMany({
+      data: others.map((u) => ({
+        userId:  u.id,
+        titre:   `Nouveau message de ${senderNom}`,
+        message: text,
+        type:    'MESSAGE',
+      })),
+    });
   }
 }

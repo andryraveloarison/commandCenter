@@ -6,11 +6,12 @@ import apiService from '@services/api';
 interface Site       { id: string; nom: string; }
 interface Demandeur  { id: string; nom: string; siteId?: string; site?: Site; }
 interface UserBrief  { id: string; nom: string; photo?: string; role: string; }
+interface IntervenantRow { user: UserBrief; }
 interface Intervention {
   id: string; probleme: string; solution?: string;
   statut: 'EN_ATTENTE' | 'EN_COURS' | 'RESOLU' | 'ANNULE';
   dateIntervention?: string; createdAt: string;
-  intervenant?: UserBrief; demandeur?: Demandeur; site?: Site;
+  intervenants: IntervenantRow[]; demandeur?: Demandeur; site?: Site;
 }
 
 /* ── Helpers ────────────────────────────────────────────────────────────── */
@@ -76,30 +77,73 @@ const QuickAdd: React.FC<{
   );
 };
 
+/* ── Multi-intervenant picker ────────────────────────────────────────────── */
+const IntervenantsPicker: React.FC<{
+  users: UserBrief[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}> = ({ users, selected, onChange }) => {
+  const toggle = (id: string) => {
+    onChange(selected.includes(id) ? selected.filter(x => x !== id) : [...selected, id]);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', border: '1px solid #EEF0F6', borderRadius: 12, padding: 8 }}>
+      {users.length === 0 && <p style={{ fontSize: 12, color: '#C4C9D4', margin: 0, padding: 4 }}>Aucun utilisateur</p>}
+      {users.map(u => {
+        const isChecked = selected.includes(u.id);
+        return (
+          <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: isChecked ? '#EEF2FF' : 'transparent', transition: 'background 0.1s' }}>
+            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isChecked ? '#4F46E5' : '#D1D5DB'}`, background: isChecked ? '#4F46E5' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, color: '#fff', fontWeight: 900 }}>
+              {isChecked && '✓'}
+            </div>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
+              {u.photo ? <img src={u.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : u.nom[0]}
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>{u.nom}</p>
+              <p style={{ margin: 0, fontSize: 10, color: '#9CA3AF' }}>{u.role}</p>
+            </div>
+            <input type="checkbox" checked={isChecked} onChange={() => toggle(u.id)} style={{ display: 'none' }} />
+          </label>
+        );
+      })}
+    </div>
+  );
+};
+
 /* ── Modal create / edit ─────────────────────────────────────────────────── */
-const EMPTY = { probleme: '', solution: '', statut: 'EN_ATTENTE', dateIntervention: '', intervenantId: '', demandeurId: '', siteId: '' };
+type FormState = { probleme: string; solution: string; statut: string; dateIntervention: string; intervenantIds: string[]; demandeurId: string; siteId: string; };
+const EMPTY: FormState = { probleme: '', solution: '', statut: 'EN_ATTENTE', dateIntervention: '', intervenantIds: [], demandeurId: '', siteId: '' };
 
 const Modal: React.FC<{
   item?: Intervention | null;
   sites: Site[]; demandeurs: Demandeur[]; users: UserBrief[];
   onClose: () => void; onSaved: () => void;
 }> = ({ item, sites, demandeurs, users, onClose, onSaved }) => {
-  const [f, setF] = useState<typeof EMPTY>(() => item ? {
-    probleme: item.probleme, solution: item.solution || '',
-    statut: item.statut,
+  const [f, setF] = useState<FormState>(() => item ? {
+    probleme:         item.probleme,
+    solution:         item.solution || '',
+    statut:           item.statut,
     dateIntervention: item.dateIntervention ? item.dateIntervention.slice(0, 10) : '',
-    intervenantId: item.intervenant?.id || '',
-    demandeurId: item.demandeur?.id || '',
-    siteId: item.site?.id || '',
+    intervenantIds:   item.intervenants.map(iv => iv.user.id),
+    demandeurId:      item.demandeur?.id || '',
+    siteId:           item.site?.id || '',
   } : { ...EMPTY });
   const [qa, setQa] = useState<'site' | 'demandeur' | null>(null);
   const [saving, setSaving] = useState(false);
-  const set = (k: keyof typeof EMPTY, v: string) => setF(p => ({ ...p, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF(p => ({ ...p, [k]: v }));
 
   const save = async () => {
     if (!f.probleme.trim()) return;
     setSaving(true);
-    const payload = { ...f, dateIntervention: f.dateIntervention || null, intervenantId: f.intervenantId || null, demandeurId: f.demandeurId || null, siteId: f.siteId || null };
+    const payload = {
+      ...f,
+      dateIntervention: f.dateIntervention || null,
+      intervenantIds:   f.intervenantIds.length ? f.intervenantIds : [],
+      demandeurId:      f.demandeurId || null,
+      siteId:           f.siteId || null,
+    };
     try {
       item ? await apiService.updateIntervention(item.id, payload) : await apiService.createIntervention(payload);
       onSaved();
@@ -153,13 +197,19 @@ const Modal: React.FC<{
               <input type="date" className={inp} value={f.dateIntervention} onChange={e => set('dateIntervention', e.target.value)} />
             </div>
 
-            {/* Intervenant */}
+            {/* Intervenants (multi) */}
             <div style={{ gridColumn: '1 / -1' }}>
-              <label className={lbl}>Intervenant</label>
-              <select className={inp} value={f.intervenantId} onChange={e => set('intervenantId', e.target.value)}>
-                <option value="">— Choisir un intervenant —</option>
-                {users.map(u => <option key={u.id} value={u.id}>{u.nom} ({u.role})</option>)}
-              </select>
+              <label className={lbl}>
+                Intervenants
+                {f.intervenantIds.length > 0 && (
+                  <span style={{ marginLeft: 6, color: '#4F46E5', fontWeight: 800 }}>({f.intervenantIds.length} sélectionné{f.intervenantIds.length > 1 ? 's' : ''})</span>
+                )}
+              </label>
+              <IntervenantsPicker
+                users={users}
+                selected={f.intervenantIds}
+                onChange={ids => set('intervenantIds', ids)}
+              />
             </div>
 
             {/* Site */}
@@ -252,7 +302,8 @@ const InterventionsPage: React.FC = () => {
     const matchStatus = filter === 'Tous' || i.statut === filter;
     const matchPeriod = isInPeriod(i.createdAt, period);
     const q = search.toLowerCase();
-    const matchSearch = !q || i.probleme.toLowerCase().includes(q) || i.site?.nom.toLowerCase().includes(q) || i.demandeur?.nom.toLowerCase().includes(q) || i.intervenant?.nom.toLowerCase().includes(q);
+    const intervenantMatch = i.intervenants.some(iv => iv.user.nom.toLowerCase().includes(q));
+    const matchSearch = !q || i.probleme.toLowerCase().includes(q) || i.site?.nom.toLowerCase().includes(q) || i.demandeur?.nom.toLowerCase().includes(q) || intervenantMatch;
     return matchStatus && matchPeriod && matchSearch;
   });
 
@@ -362,12 +413,24 @@ const InterventionsPage: React.FC = () => {
                   <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{iv.probleme}</span>
                 </td>
                 <td style={{ padding: '13px 16px' }}>
-                  {iv.intervenant ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
-                        {iv.intervenant.photo ? <img src={iv.intervenant.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : iv.intervenant.nom[0]}
+                  {iv.intervenants.length > 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {/* Stacked avatars */}
+                      <div style={{ display: 'flex' }}>
+                        {iv.intervenants.slice(0, 4).map((ir, i) => (
+                          <div key={ir.user.id} title={ir.user.nom} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
+                            {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.nom[0]}
+                          </div>
+                        ))}
+                        {iv.intervenants.length > 4 && (
+                          <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#EEF2FF', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#4F46E5', marginLeft: -8 }}>
+                            +{iv.intervenants.length - 4}
+                          </div>
+                        )}
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenant.nom}</span>
+                      {iv.intervenants.length === 1 && (
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenants[0].user.nom}</span>
+                      )}
                     </div>
                   ) : <span style={{ color: '#D1D5DB', fontSize: 12 }}>—</span>}
                 </td>

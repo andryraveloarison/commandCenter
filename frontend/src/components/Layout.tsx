@@ -289,7 +289,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }, []);
 
   const handleLogout = () => { dispatch(logout()); navigate('/login'); };
-  const userInitial = auth.user?.nom?.[0]?.toUpperCase() || 'U';
+  const userInitial = (auth.user?.username ?? auth.user?.nom)?.[0]?.toUpperCase() || 'U';
   const pageTitle = Object.entries(pageTitles).find(([k]) => location.pathname.startsWith(k))?.[1] ?? 'DSI Admin';
   const onMessagesPage = location.pathname === '/messages';
 
@@ -461,7 +461,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 }
               </div>
               <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1D2E' }}>
-                {auth.user?.nom?.split(' ')[0] || 'Utilisateur'}
+                {auth.user?.username ?? auth.user?.nom?.split(' ')[0] ?? 'Utilisateur'}
               </span>
               <svg width={12} height={12} fill="none" stroke="#B0B5CC" strokeWidth={2} viewBox="0 0 24 24"
                 style={{ transition: 'transform 0.2s', transform: showMenu ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
@@ -483,7 +483,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               }}>
                 <div style={{ padding: '13px 16px', borderBottom: '1px solid #F5F7FA' }}>
                   <p style={{ fontSize: 13.5, fontWeight: 700, color: '#1A1D2E', margin: 0, lineHeight: 1.2 }}>
-                    {auth.user?.nom}
+                    {auth.user?.username ?? auth.user?.nom}
                   </p>
                   <p style={{ fontSize: 11, color: '#B0B5CC', margin: '3px 0 0', fontWeight: 500 }}>
                     {auth.user?.role} · {auth.user?.email}

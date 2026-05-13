@@ -5,6 +5,10 @@ export type { Task, Project, User };
 export type ViewMode = 'month' | 'gantt' | 'list';
 export type ContentType = 'projets' | 'interventions';
 
+export interface IntervenantRow {
+  user: { id: string; nom: string; photo?: string; role: string };
+}
+
 export interface LocalIntervention {
   id: string;
   probleme: string;
@@ -12,7 +16,7 @@ export interface LocalIntervention {
   statut: 'EN_ATTENTE' | 'EN_COURS' | 'RESOLU' | 'ANNULE';
   dateIntervention?: string;
   createdAt: string;
-  intervenant?: { id: string; nom: string; photo?: string; role: string };
+  intervenants: IntervenantRow[];
 }
 
 export const MONTH_NAMES = [

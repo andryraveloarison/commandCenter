@@ -182,6 +182,14 @@ class APIService {
     return this.axiosInstance.post('/chat', { contenu });
   }
 
+  async createPoll(question: string, options: string[]) {
+    return this.axiosInstance.post('/chat/poll', { question, options });
+  }
+
+  async votePoll(pollId: string, optionIndex: number) {
+    return this.axiosInstance.post(`/chat/poll/${pollId}/vote`, { optionIndex });
+  }
+
   async markMessagesAsRead() {
     return this.axiosInstance.post('/chat/mark-read');
   }

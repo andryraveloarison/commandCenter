@@ -33,12 +33,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(_client: Socket) {}
 
-  /* Broadcast a group message to every connected client */
   emitGroupMessage(message: any) {
     this.server.emit('group_message', message);
   }
 
-  /* Send a DM to both sender and receiver rooms (multi-tab support) */
+  emitPollUpdate(poll: any) {
+    this.server.emit('poll_update', poll);
+  }
+
   emitDmMessage(senderId: string, receiverId: string, message: any) {
     this.server.to(`user:${receiverId}`).emit('dm_message', message);
     this.server.to(`user:${senderId}`).emit('dm_message', message);

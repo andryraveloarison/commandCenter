@@ -36,7 +36,8 @@ model User {
   messageReads            MessageRead[]
   sentPrivateMessages     PrivateMessage[] @relation("SentPrivateMessages")
   receivedPrivateMessages PrivateMessage[] @relation("ReceivedPrivateMessages")
-  interventions           Intervention[]   @relation("InterventionsIntervenant")
+  interventionParticipations InterventionIntervenant[]
+  pollVotes               PollVote[]
 
   @@map("users")
 }
@@ -229,15 +230,51 @@ model Attachment {
 
 // ==================== MESSAGE (chat groupe) ====================
 
+enum MessageType {
+  TEXT
+  POLL
+}
+
 model Message {
   id        String        @id @default(cuid())
   contenu   String
+  type      MessageType   @default(TEXT)
+  pollId    String?       @unique
   userId    String
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   reads     MessageRead[]
+  poll      Poll?         @relation(fields: [pollId], references: [id], onDelete: SetNull)
   createdAt DateTime      @default(now())
 
   @@map("messages")
+}
+
+// ==================== POLL (sondage dans le chat) ====================
+
+model Poll {
+  id        String     @id @default(cuid())
+  question  String
+  options   String[]
+  createdAt DateTime   @default(now())
+
+  message   Message?
+  votes     PollVote[]
+
+  @@map("polls")
+}
+
+model PollVote {
+  id          String   @id @default(cuid())
+  pollId      String
+  userId      String
+  optionIndex Int
+  createdAt   DateTime @default(now())
+
+  poll Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
+  @@map("poll_votes")
 }
 
 model MessageRead {
@@ -288,17 +325,28 @@ model Intervention {
   solution         String?
   statut           InterventionStatus @default(EN_ATTENTE)
   dateIntervention DateTime?
-  intervenantId    String?
   demandeurId      String?
   siteId           String?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  intervenant User?      @relation("InterventionsIntervenant", fields: [intervenantId], references: [id], onDelete: SetNull)
-  demandeur   Demandeur? @relation(fields: [demandeurId],   references: [id], onDelete: SetNull)
-  site        Site?      @relation(fields: [siteId],        references: [id], onDelete: SetNull)
+  intervenants InterventionIntervenant[]
+  demandeur    Demandeur? @relation(fields: [demandeurId], references: [id], onDelete: SetNull)
+  site         Site?      @relation(fields: [siteId],      references: [id], onDelete: SetNull)
 
   @@map("interventions")
+}
+
+model InterventionIntervenant {
+  id             String @id @default(cuid())
+  interventionId String
+  userId         String
+
+  intervention Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId],         references: [id], onDelete: Cascade)
+
+  @@unique([interventionId, userId])
+  @@map("intervention_intervenants")
 }
 
 enum InterventionStatus {

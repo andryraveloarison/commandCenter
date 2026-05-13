@@ -87,7 +87,7 @@ export class UsersService {
     const threshold = new Date(Date.now() - 45 * 1000);
     return this.prisma.user.findMany({
       where: { activite: { gte: threshold } },
-      select: { id: true, nom: true, photo: true, role: true, statut: true, activite: true },
+      select: { id: true, nom: true, username: true, photo: true, role: true, statut: true, activite: true },
       orderBy: { activite: 'desc' },
     });
   }

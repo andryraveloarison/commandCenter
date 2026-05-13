@@ -46,7 +46,9 @@ const CalendarPage: React.FC = () => {
   );
 
   const filteredInterventions = useMemo(() =>
-    filterUser ? interventions.filter(i => i.intervenant?.id === filterUser) : interventions,
+    filterUser
+      ? interventions.filter(i => i.intervenants?.some(iv => iv.user.id === filterUser))
+      : interventions,
     [interventions, filterUser]
   );
 
