@@ -8,6 +8,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     cors: true,
+    allowedHosts: ['serveur', 'andry'],
     watch: {
       usePolling: true,
       interval: 500,
