@@ -45,6 +45,26 @@ services:
       - commandcenter-network
     command: sh -c "npx prisma generate && npx prisma db push --accept-data-loss && npm run start:dev"
 
+  # Prisma Studio
+  prisma-studio:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: commandcenter-prisma-studio
+    environment:
+      DATABASE_URL: postgresql://commandcenter:CommandCenter2026@postgres:5432/commandcenter
+    ports:
+      - "5556:5556"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - commandcenter-network
+    command: sh -c "npx prisma generate && npx prisma studio --port 5556 --hostname 0.0.0.0 --browser none"
+
   # Frontend
   frontend:
     build:
