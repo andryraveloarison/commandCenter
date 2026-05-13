@@ -49,7 +49,7 @@ export class UsersService {
     const data = { ...dto } as any;
     
     if (data.password) {
-      const bcrypt = require('bcrypt');
+      const bcrypt = require('bcryptjs');
       data.password = await bcrypt.hash(data.password, 10);
     }
 
