@@ -5,7 +5,8 @@ export interface ChatUser  { id: string; nom: string; username?: string; photo?:
 export interface GroupMessage {
   id: string;
   contenu: string;
-  type: 'TEXT' | 'POLL';
+  type: 'TEXT' | 'POLL' | 'IMAGE' | 'FILE';
+  fileName?: string;
   createdAt: string;
   user: ChatUser;
   reads: { id: string; user: ChatUser }[];

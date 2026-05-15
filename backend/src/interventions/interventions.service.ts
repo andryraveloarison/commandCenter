@@ -99,8 +99,11 @@ export class InterventionsService {
     });
   }
 
-  remove(id: string) {
-    return this.prisma.intervention.delete({ where: { id } });
+  async remove(id: string) {
+    const item = await this.prisma.intervention.findUnique({ where: { id }, select: { probleme: true } });
+    const deleted = await this.prisma.intervention.delete({ where: { id } });
+    this.chat.emitToAll('intervention:deleted', { interventionId: id, probleme: item?.probleme ?? '' });
+    return deleted;
   }
 
   stats() {

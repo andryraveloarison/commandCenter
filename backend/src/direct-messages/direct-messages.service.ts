@@ -35,24 +35,29 @@ export class DirectMessagesService {
   }
 
   /* Messages between current user and a partner */
-  async getMessages(userId: string, partnerId: string) {
-    return this.prisma.privateMessage.findMany({
-      where: {
-        OR: [
-          { senderId: userId, receiverId: partnerId },
-          { senderId: partnerId, receiverId: userId },
-        ],
-      },
+  async getMessages(userId: string, partnerId: string, limit = 20, before?: string) {
+    const where: any = {
+      OR: [
+        { senderId: userId, receiverId: partnerId },
+        { senderId: partnerId, receiverId: userId },
+      ],
+    };
+    if (before) where.createdAt = { lt: new Date(before) };
+
+    const messages = await this.prisma.privateMessage.findMany({
+      where,
       include: { sender: USER_SELECT },
-      orderBy: { createdAt: 'asc' },
-      take: 200,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
     });
+    const items = messages.reverse();
+    return { messages: items, hasMore: messages.length === limit };
   }
 
   /* Send a DM */
-  async sendMessage(senderId: string, receiverId: string, contenu: string) {
+  async sendMessage(senderId: string, receiverId: string, contenu: string, type: 'TEXT' | 'IMAGE' | 'FILE' = 'TEXT', fileName?: string) {
     const msg = await this.prisma.privateMessage.create({
-      data: { senderId, receiverId, contenu },
+      data: { senderId, receiverId, contenu, type: type as any, fileName },
       include: { sender: USER_SELECT },
     });
 

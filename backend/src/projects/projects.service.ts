@@ -139,22 +139,29 @@ export class ProjectsService {
       throw new ForbiddenException('Cet utilisateur est déjà membre du projet.');
     }
 
-    return this.prisma.projectTeam.create({
-      data: {
-        projectId,
-        userId: dto.userId,
-        role: dto.role || 'SOLDAT',
-      },
+    const [member, project] = await Promise.all([
+      this.prisma.projectTeam.create({
+        data: { projectId, userId: dto.userId, role: dto.role || 'SOLDAT' },
+      }),
+      this.prisma.project.findUnique({ where: { id: projectId }, select: { nom: true } }),
+    ]);
+
+    this.chat.emitToAll('project:team_updated', { projectId, nom: project?.nom ?? '' });
+    this.chat.emitToUser(dto.userId, 'notification', {
+      type: 'project:team_updated',
+      title: 'Ajouté à un dossier',
+      message: `Vous rejoignez le dossier "${project?.nom ?? ''}"`,
+      projectId,
     });
+
+    return member;
   }
 
   async removeTeamMember(projectId: string, userId: string) {
-    return this.prisma.projectTeam.deleteMany({
-      where: {
-        projectId,
-        userId,
-      },
-    });
+    const project = await this.prisma.project.findUnique({ where: { id: projectId }, select: { nom: true } });
+    const result = await this.prisma.projectTeam.deleteMany({ where: { projectId, userId } });
+    this.chat.emitToAll('project:team_updated', { projectId, nom: project?.nom ?? '' });
+    return result;
   }
 
   async calculateProgress(projectId: string, userId?: string, actionNote?: string) {
@@ -202,9 +209,17 @@ export class ProjectsService {
       newStatus = oldProject?.statut || 'PREPARATION';
     }
 
+    const updatedProject = await this.prisma.project.findUnique({ where: { id: projectId } });
     await this.prisma.project.update({
       where: { id: projectId },
       data: { progressionGlobale: averageProgress, statut: newStatus as any },
+    });
+
+    this.chat.emitToAll('project:updated', {
+      projectId,
+      nom: updatedProject?.nom ?? '',
+      progressionGlobale: averageProgress,
+      statut: newStatus,
     });
 
     // Always record history when progression changes

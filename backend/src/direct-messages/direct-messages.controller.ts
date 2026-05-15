@@ -1,13 +1,20 @@
-import { Controller, Get, Post, Body, Param, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { DirectMessagesService } from './direct-messages.service';
 
 class SendDmDto {
   @IsString()
   @IsNotEmpty()
-  @MaxLength(1000)
   contenu: string;
+
+  @IsString()
+  @IsOptional()
+  type?: 'TEXT' | 'IMAGE' | 'FILE';
+
+  @IsString()
+  @IsOptional()
+  fileName?: string;
 }
 
 @Controller('direct-messages')
@@ -26,13 +33,18 @@ export class DirectMessagesController {
   }
 
   @Get(':partnerId')
-  getMessages(@Request() req, @Param('partnerId') partnerId: string) {
-    return this.dmService.getMessages(req.user.id, partnerId);
+  getMessages(
+    @Request() req,
+    @Param('partnerId') partnerId: string,
+    @Query('limit') limit?: string,
+    @Query('before') before?: string,
+  ) {
+    return this.dmService.getMessages(req.user.id, partnerId, limit ? parseInt(limit, 10) : 20, before);
   }
 
   @Post(':receiverId')
   sendMessage(@Request() req, @Param('receiverId') receiverId: string, @Body() dto: SendDmDto) {
-    return this.dmService.sendMessage(req.user.id, receiverId, dto.contenu);
+    return this.dmService.sendMessage(req.user.id, receiverId, dto.contenu, dto.type ?? 'TEXT', dto.fileName);
   }
 
   @Post(':partnerId/read')

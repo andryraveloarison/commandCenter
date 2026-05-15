@@ -1,11 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '@store/store';
 import apiService from '@services/api';
 import socketService from '@services/socket';
 import PollCard from '@components/chat/PollCard';
 import CreatePollForm from '@components/chat/CreatePollForm';
+import AttachMenu from '@components/chat/AttachMenu';
+import FileCard from '@components/chat/FileCard';
 import type { GroupMessage, Poll } from '@components/chat/chatTypes';
+import {
+  setGroupMessages, prependGroupMessages, setGroupLoadingMore,
+  addGroupMessage, updateGroupReads, updateGroupPoll,
+  setDmMessages, prependDmMessages, setDmLoadingMore,
+  addDmMessage, markDmRead,
+} from '@store/slices/messagesSlice';
 
 /* ── Local types ─────────────────────────────────────────────────────────── */
 interface UserBrief { id: string; nom: string; username?: string; photo?: string; }
@@ -13,6 +21,8 @@ interface UserBrief { id: string; nom: string; username?: string; photo?: string
 interface DmMessage {
   id: string; contenu: string; createdAt: string; lu: boolean;
   sender: UserBrief;
+  type?: 'TEXT' | 'IMAGE' | 'FILE';
+  fileName?: string;
 }
 
 interface Conversation {
@@ -88,12 +98,14 @@ const UserPicker: React.FC<{ users: UserBrief[]; onSelect: (u: UserBrief) => voi
 
 /* ── Main page ───────────────────────────────────────────────────────────── */
 const MessagesPage: React.FC = () => {
+  const dispatch = useDispatch();
   const auth = useSelector((state: RootState) => state.auth);
   const me   = auth.user;
 
-  const [view, setView]                   = useState<'group' | string>('group');
-  const [groupMessages, setGroupMessages] = useState<GroupMessage[]>([]);
-  const [dmMessages, setDmMessages]       = useState<DmMessage[]>([]);
+  const groupCache   = useSelector((s: RootState) => s.messages.group);
+  const dmCache      = useSelector((s: RootState) => s.messages.dm);
+
+  const [view, setView]                 = useState<'group' | string>('group');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [allUsers, setAllUsers]           = useState<UserBrief[]>([]);
   const [onlineCount, setOnlineCount]     = useState(0);
@@ -101,110 +113,151 @@ const MessagesPage: React.FC = () => {
   const [sending, setSending]             = useState(false);
   const [showPicker, setShowPicker]       = useState(false);
   const [showPollForm, setShowPollForm]   = useState(false);
+  const [showAttach, setShowAttach]       = useState(false);
+  const [lightboxSrc, setLightboxSrc]     = useState<string | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef     = useRef<HTMLTextAreaElement>(null);
-  const prevCountRef = useRef(0);
+  const containerRef    = useRef<HTMLDivElement>(null);
+  const inputRef        = useRef<HTMLTextAreaElement>(null);
+  const prevCountRef    = useRef(0);
+  const savedScrollRef  = useRef<number | null>(null); // for restoring scroll after prepend
 
+  const groupMessages = groupCache.items as GroupMessage[];
+  const dmConv        = view !== 'group' ? dmCache[view] : null;
+  const dmMessages    = (dmConv?.items ?? []) as DmMessage[];
+
+  /* ── Scroll to bottom on new messages ── */
   const scrollDown = useCallback((force = false) => {
     const el = containerRef.current;
     if (!el) return;
-    const msgs = view === 'group' ? groupMessages : dmMessages;
-    if (force || msgs.length > prevCountRef.current) { el.scrollTop = el.scrollHeight; prevCountRef.current = msgs.length; }
-  }, [view, groupMessages, dmMessages]);
+    const count = view === 'group' ? groupMessages.length : dmMessages.length;
+    if (force || count > prevCountRef.current) {
+      el.scrollTop = el.scrollHeight;
+      prevCountRef.current = count;
+    }
+  }, [view, groupMessages.length, dmMessages.length]);
 
-  useEffect(() => { scrollDown(); }, [groupMessages, dmMessages]);
+  useEffect(() => {
+    if (savedScrollRef.current !== null) {
+      // Restore scroll position after prepend (load more)
+      const el = containerRef.current;
+      if (el) el.scrollTop = el.scrollHeight - savedScrollRef.current;
+      savedScrollRef.current = null;
+    } else {
+      scrollDown();
+    }
+  }, [groupMessages, dmMessages]);
 
+  /* ── Initial setup ── */
   useEffect(() => {
     apiService.getUsers().then(r => setAllUsers((r.data as any[]).filter(u => u.id !== me?.id))).catch(() => {});
     apiService.getOnlineUsers().then(r => setOnlineCount(Array.isArray(r.data) ? r.data.length : 0)).catch(() => {});
     fetchConversations();
-    socketService.connect();
-    return () => { socketService.disconnect(); };
   }, []);
 
   const fetchConversations = () => { apiService.getDmConversations().then(r => setConversations(r.data)).catch(() => {}); };
 
-  /* Real-time: group messages */
+  /* ── Load initial messages when view changes (cache-first) ── */
+  useEffect(() => {
+    prevCountRef.current = 0;
+    if (view === 'group') {
+      if (groupCache.items.length === 0) {
+        apiService.getMessages({ limit: 20 }).then(r => {
+          dispatch(setGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
+        }).catch(() => {});
+      }
+      apiService.markMessagesAsRead().catch(() => {});
+    } else {
+      if (!dmCache[view] || dmCache[view].items.length === 0) {
+        apiService.getDmMessages(view, { limit: 20 }).then(r => {
+          dispatch(setDmMessages({ partnerId: view, items: r.data.messages, hasMore: r.data.hasMore }));
+        }).catch(() => {});
+      }
+      apiService.markDmAsRead(view).catch(() => {});
+      fetchConversations();
+    }
+  }, [view]);
+
+  /* ── Scroll-to-top → load older messages ── */
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      if (el.scrollTop > 40) return;
+      if (view === 'group') {
+        if (!groupCache.hasMore || groupCache.loadingMore) return;
+        const oldest = groupCache.items[0]?.createdAt;
+        if (!oldest) return;
+        dispatch(setGroupLoadingMore(true));
+        savedScrollRef.current = el.scrollHeight;
+        apiService.getMessages({ limit: 10, before: oldest }).then(r => {
+          dispatch(prependGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
+        }).catch(() => dispatch(setGroupLoadingMore(false)));
+      } else {
+        const conv = dmCache[view];
+        if (!conv?.hasMore || conv?.loadingMore) return;
+        const oldest = conv.items[0]?.createdAt;
+        if (!oldest) return;
+        dispatch(setDmLoadingMore({ partnerId: view, loading: true }));
+        savedScrollRef.current = el.scrollHeight;
+        apiService.getDmMessages(view, { limit: 10, before: oldest }).then(r => {
+          dispatch(prependDmMessages({ partnerId: view, items: r.data.messages, hasMore: r.data.hasMore }));
+        }).catch(() => dispatch(setDmLoadingMore({ partnerId: view, loading: false })));
+      }
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [view, groupCache, dmCache]);
+
+  /* ── Real-time: new group messages ── */
   useEffect(() => {
     const handler = (msg: GroupMessage) => {
-      setGroupMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg]);
+      dispatch(addGroupMessage(msg));
       if (view === 'group') apiService.markMessagesAsRead().catch(() => {});
     };
     socketService.on<GroupMessage>('group_message', handler);
     return () => socketService.off('group_message', handler);
   }, [view]);
 
-  /* Real-time: group read receipts */
+  /* ── Real-time: group read receipts ── */
   useEffect(() => {
     const handler = (data: { user: { id: string; nom: string; username?: string; photo?: string } }) => {
       if (data.user.id === me?.id) return;
-      setGroupMessages(prev => prev.map(m => {
-        if (m.reads?.some(r => r.user.id === data.user.id)) return m;
-        return { ...m, reads: [...(m.reads ?? []), { user: data.user }] };
-      }));
+      dispatch(updateGroupReads({ user: data.user }));
     };
     socketService.on('message:read', handler);
     return () => socketService.off('message:read', handler);
   }, [me?.id]);
 
-  /* Real-time: DM read receipts */
+  /* ── Real-time: DM read receipts ── */
   useEffect(() => {
     const handler = (data: { readerId: string }) => {
-      // The partner read my messages — mark them as lu
-      if (data.readerId !== view) return; // only update if it's the active conversation
-      setDmMessages(prev => prev.map(m => ({
-        ...m,
-        lu: (m as DmMessage).sender?.id === me?.id ? true : m.lu,
-      })));
+      if (data.readerId !== view) return;
+      dispatch(markDmRead(view));
     };
     socketService.on('dm:read', handler);
     return () => socketService.off('dm:read', handler);
-  }, [view, me?.id]);
+  }, [view]);
 
-  /* Real-time: poll votes */
+  /* ── Real-time: poll votes ── */
   useEffect(() => {
-    const handler = (updatedPoll: Poll) => {
-      setGroupMessages(prev => prev.map(m => m.poll?.id === updatedPoll.id ? { ...m, poll: updatedPoll } : m));
-    };
+    const handler = (updatedPoll: Poll) => { dispatch(updateGroupPoll(updatedPoll)); };
     socketService.on<Poll>('poll_update', handler);
     return () => socketService.off('poll_update', handler);
   }, []);
 
-  /* Real-time: DMs */
+  /* ── Real-time: incoming DMs ── */
   useEffect(() => {
     const handler = (msg: DmMessage) => {
       const partnerId = msg.sender.id === me?.id ? (msg as any).receiverId : msg.sender.id;
-      setDmMessages(prev => {
-        if (view !== partnerId && view !== msg.sender.id) return prev;
-        return prev.find(m => m.id === msg.id) ? prev : [...prev, msg];
-      });
+      if (view === partnerId || view === msg.sender.id) {
+        dispatch(addDmMessage({ partnerId, item: msg }));
+        apiService.markDmAsRead(partnerId).catch(() => {});
+      }
       fetchConversations();
-      if (view === partnerId || view === msg.sender.id) apiService.markDmAsRead(partnerId).catch(() => {});
     };
     socketService.on<DmMessage>('dm_message', handler);
     return () => socketService.off('dm_message', handler);
   }, [view, me?.id]);
-
-  /* Fallback poll (30s) */
-  useEffect(() => {
-    prevCountRef.current = 0;
-    const tick = async () => {
-      if (view === 'group') {
-        const res = await apiService.getMessages().catch(() => null);
-        if (res) setGroupMessages(res.data);
-        apiService.markMessagesAsRead().catch(() => {});
-      } else {
-        const res = await apiService.getDmMessages(view).catch(() => null);
-        if (res) setDmMessages(res.data);
-        apiService.markDmAsRead(view).catch(() => {});
-        fetchConversations();
-      }
-    };
-    tick();
-    const id = setInterval(tick, 30000);
-    return () => clearInterval(id);
-  }, [view]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -228,11 +281,36 @@ const MessagesPage: React.FC = () => {
     try { await apiService.createPoll(question, options); } catch {}
   };
 
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleAttachImage = async (file: File) => {
+    try {
+      const b64 = await fileToBase64(file);
+      if (view === 'group') await apiService.sendMediaMessage('IMAGE', b64, file.name);
+      else await apiService.sendDmMessage(view, b64, 'IMAGE', file.name);
+      if (view !== 'group') fetchConversations();
+    } catch {}
+  };
+
+  const handleAttachFile = async (file: File) => {
+    try {
+      const b64 = await fileToBase64(file);
+      if (view === 'group') await apiService.sendMediaMessage('FILE', b64, file.name);
+      else await apiService.sendDmMessage(view, b64, 'FILE', file.name);
+      if (view !== 'group') fetchConversations();
+    } catch {}
+  };
+
   const handleVote = async (pollId: string, optionIndex: number) => {
     try {
       const res = await apiService.votePoll(pollId, optionIndex);
-      const updated: Poll = res.data;
-      setGroupMessages(prev => prev.map(m => m.poll?.id === pollId ? { ...m, poll: updated } : m));
+      dispatch(updateGroupPoll(res.data));
     } catch {}
   };
 
@@ -244,6 +322,8 @@ const MessagesPage: React.FC = () => {
     }
   };
 
+  const isLoadingMore = view === 'group' ? groupCache.loadingMore : (dmCache[view]?.loadingMore ?? false);
+  const hasMore       = view === 'group' ? groupCache.hasMore : (dmCache[view]?.hasMore ?? false);
   const messages = view === 'group' ? groupMessages : dmMessages;
   const groups: { date: string; msgs: (GroupMessage | DmMessage)[] }[] = [];
   for (const m of messages) {
@@ -273,6 +353,18 @@ const MessagesPage: React.FC = () => {
   return (
     <>
       {showPicker && <UserPicker users={allUsers} onSelect={startDm} onClose={() => setShowPicker(false)} />}
+
+      {lightboxSrc && (
+        <div onClick={() => setLightboxSrc(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
+          <img src={lightboxSrc} alt="aperçu"
+            style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 10, boxShadow: '0 8px 40px rgba(0,0,0,0.5)', objectFit: 'contain' }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button onClick={() => setLightboxSrc(null)}
+            style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>×</button>
+        </div>
+      )}
 
       <div style={{ display: 'flex', height: 'calc(100vh - 108px)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.06)', border: '1px solid #EEF0F6' }}>
 
@@ -359,6 +451,17 @@ const MessagesPage: React.FC = () => {
 
           {/* Messages */}
           <div ref={containerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column' }}>
+            {/* Load-more indicator */}
+            {isLoadingMore && (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0 4px' }}>
+                <div style={{ width: 18, height: 18, border: '2px solid #EEF2FF', borderTop: '2px solid #4F46E5', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              </div>
+            )}
+            {hasMore && !isLoadingMore && messages.length > 0 && (
+              <div style={{ textAlign: 'center', padding: '4px 0 8px' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>↑ Faire défiler pour charger plus</span>
+              </div>
+            )}
             {groups.length === 0 && (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 60 }}>
                 <div style={{ fontSize: 38 }}>{view === 'group' ? '💬' : '✉️'}</div>
@@ -404,6 +507,15 @@ const MessagesPage: React.FC = () => {
                               isMine={isMine}
                               onVote={handleVote}
                             />
+                          ) : (msg as GroupMessage).type === 'IMAGE' || (msg as DmMessage).type === 'IMAGE' ? (
+                            <img
+                              src={msg.contenu}
+                              alt={(msg as any).fileName ?? 'image'}
+                              onClick={() => setLightboxSrc(msg.contenu)}
+                              style={{ maxWidth: 260, maxHeight: 220, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid #EEF0F6' }}
+                            />
+                          ) : (msg as GroupMessage).type === 'FILE' || (msg as DmMessage).type === 'FILE' ? (
+                            <FileCard contenu={msg.contenu} fileName={(msg as any).fileName ?? 'fichier'} isMine={isMine} />
                           ) : (
                             <div style={{ padding: '9px 13px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13.5, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
                               {msg.contenu}
@@ -438,15 +550,20 @@ const MessagesPage: React.FC = () => {
 
           {/* Input */}
           <div style={{ padding: '11px 16px', borderTop: '1px solid #F0F2F8', display: 'flex', gap: 10, alignItems: 'flex-end', flexShrink: 0 }}>
-            {me && <Av user={me as UserBrief} size={32} style={{ borderRadius: 10, marginBottom: 2 }} />}
-
-            {/* Poll button — group only */}
-            {view === 'group' && (
-              <button onClick={() => setShowPollForm(v => !v)} title="Créer un sondage"
-                style={{ width: 42, height: 42, borderRadius: 11, flexShrink: 0, border: `1.5px solid ${showPollForm ? '#4F46E5' : '#EEF0F6'}`, background: showPollForm ? '#EEF2FF' : '#F8FAFC', color: showPollForm ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 0 }}>
-                📊
+            {/* Attach "+" button + popup menu */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <button onClick={() => setShowAttach(v => !v)} title="Joindre"
+                style={{ width: 42, height: 42, borderRadius: 11, border: `1.5px solid ${showAttach ? '#4F46E5' : '#EEF0F6'}`, background: showAttach ? '#EEF2FF' : '#F8FAFC', color: showAttach ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                +
               </button>
-            )}
+              <AttachMenu
+                open={showAttach}
+                onClose={() => setShowAttach(false)}
+                onPoll={view === 'group' ? () => { setShowPollForm(true); setShowAttach(false); } : undefined}
+                onImage={handleAttachImage}
+                onFile={handleAttachFile}
+              />
+            </div>
 
             <textarea
               ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}

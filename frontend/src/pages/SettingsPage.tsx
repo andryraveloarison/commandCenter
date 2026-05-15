@@ -43,11 +43,14 @@ const SettingsPage: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  const isDSI = auth.user?.role === 'DSI';
+
   const handleUpdate = async () => {
     if (!auth.user?.id) return;
     setLoading(true);
     const updateData: any = { ...formData };
     if (!updateData.password) delete updateData.password;
+    if (!isDSI) delete updateData.role; // non-DSI cannot change role
     try {
       const response = await apiService.updateUser(auth.user.id, updateData);
       dispatch(setUser(response.data));
@@ -158,21 +161,32 @@ const SettingsPage: React.FC = () => {
             />
           </div>
 
-          {auth.user?.role === 'DSI' && (
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Rôle système</label>
-              <select
-                value={formData.role}
-                onChange={e => setFormData(f => ({ ...f, role: e.target.value }))}
-                className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-bold text-sm focus:border-slate-400 outline-none transition-all cursor-pointer"
-              >
-                <option value="DSI">DSI</option>
-                <option value="RESPONSABLE">Responsable</option>
-                <option value="DEVELOPPEUR">Développeur</option>
-                <option value="TECH_IT">Tech IT</option>
-              </select>
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 block">
+              Rôle système
+              {!isDSI && (
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 uppercase tracking-widest">Lecture seule</span>
+              )}
+            </label>
+            <select
+              value={formData.role}
+              onChange={e => isDSI && setFormData(f => ({ ...f, role: e.target.value }))}
+              disabled={!isDSI}
+              className="w-full border px-4 py-3 rounded-xl font-bold text-sm outline-none transition-all"
+              style={{
+                background: isDSI ? '#f8fafc' : '#f1f5f9',
+                borderColor: isDSI ? '#e2e8f0' : '#e2e8f0',
+                color: isDSI ? '#0f172a' : '#94a3b8',
+                cursor: isDSI ? 'pointer' : 'not-allowed',
+                opacity: isDSI ? 1 : 0.8,
+              }}
+            >
+              <option value="DSI">DSI</option>
+              <option value="RESPONSABLE">Responsable</option>
+              <option value="DEVELOPPEUR">Développeur</option>
+              <option value="TECH_IT">Tech IT</option>
+            </select>
+          </div>
         </div>
 
         <div className="space-y-1.5">

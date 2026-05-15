@@ -1,9 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '@store/store';
 import apiService from '@services/api';
 import socketService from '@services/socket';
 import PollCard from './chat/PollCard';
 import CreatePollForm from './chat/CreatePollForm';
+import AttachMenu from './chat/AttachMenu';
+import FileCard from './chat/FileCard';
 import type { GroupMessage, Poll } from './chat/chatTypes';
+import {
+  setGroupMessages, addGroupMessage, updateGroupReads, updateGroupPoll,
+} from '@store/slices/messagesSlice';
 
 interface Props {
   open: boolean;
@@ -19,35 +26,40 @@ const getColor = (id: string) => {
 };
 
 const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
-  const [messages,     setMessages]     = useState<GroupMessage[]>([]);
+  const dispatch  = useDispatch();
+  const groupCache = useSelector((s: RootState) => s.messages.group);
+  const messages  = groupCache.items as GroupMessage[];
+
   const [input,        setInput]        = useState('');
   const [sending,      setSending]      = useState(false);
   const [showPollForm, setShowPollForm] = useState(false);
+  const [showAttach,   setShowAttach]   = useState(false);
+  const [lightboxSrc,  setLightboxSrc]  = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  // Initial load + mark as read
+  // On open: use Redux cache; fetch only if empty
   useEffect(() => {
     if (!open) return;
-    apiService.getMessages().then(r => setMessages(r.data)).catch(() => {});
+    if (groupCache.items.length === 0) {
+      apiService.getMessages({ limit: 20 }).then(r => {
+        dispatch(setGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
+      }).catch(() => {});
+    }
     apiService.markMessagesAsRead().catch(() => {});
     inputRef.current?.focus();
   }, [open]);
 
-  // Real-time: new group messages
+  // Real-time: new group messages → dispatch to Redux
   useEffect(() => {
-    const handler = (msg: GroupMessage) => {
-      setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg]);
-    };
+    const handler = (msg: GroupMessage) => { dispatch(addGroupMessage(msg)); };
     socketService.on<GroupMessage>('group_message', handler);
     return () => socketService.off('group_message', handler);
   }, []);
 
   // Real-time: poll updates
   useEffect(() => {
-    const handler = (updatedPoll: Poll) => {
-      setMessages(prev => prev.map(m => m.poll?.id === updatedPoll.id ? { ...m, poll: updatedPoll } : m));
-    };
+    const handler = (updatedPoll: Poll) => { dispatch(updateGroupPoll(updatedPoll)); };
     socketService.on<Poll>('poll_update', handler);
     return () => socketService.off('poll_update', handler);
   }, []);
@@ -56,10 +68,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
   useEffect(() => {
     const handler = (data: { user: { id: string; nom: string; username?: string; photo?: string } }) => {
       if (data.user.id === currentUserId) return;
-      setMessages(prev => prev.map(m => {
-        if (m.reads?.some((r: any) => r.user.id === data.user.id)) return m;
-        return { ...m, reads: [...(m.reads ?? []), { user: data.user }] };
-      }));
+      dispatch(updateGroupReads({ user: data.user }));
     };
     socketService.on('message:read', handler);
     return () => socketService.off('message:read', handler);
@@ -85,11 +94,26 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
     try { await apiService.createPoll(question, options); } catch {}
   };
 
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleAttachImage = async (file: File) => {
+    try { await apiService.sendMediaMessage('IMAGE', await fileToBase64(file), file.name); } catch {}
+  };
+
+  const handleAttachFile = async (file: File) => {
+    try { await apiService.sendMediaMessage('FILE', await fileToBase64(file), file.name); } catch {}
+  };
+
   const handleVote = async (pollId: string, optionIndex: number) => {
     try {
       const res = await apiService.votePoll(pollId, optionIndex);
-      const updated: Poll = res.data;
-      setMessages(prev => prev.map(m => m.poll?.id === pollId ? { ...m, poll: updated } : m));
+      dispatch(updateGroupPoll(res.data));
     } catch {}
   };
 
@@ -113,6 +137,17 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
 
   return (
     <>
+      {lightboxSrc && (
+        <div onClick={() => setLightboxSrc(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
+          <img src={lightboxSrc} alt="aperçu"
+            style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: 10, boxShadow: '0 8px 40px rgba(0,0,0,0.5)', objectFit: 'contain' }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button onClick={() => setLightboxSrc(null)}
+            style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', color: '#fff', fontSize: 28, cursor: 'pointer', lineHeight: 1 }}>×</button>
+        </div>
+      )}
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 54, background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(1px)' }} />
       <div style={{ position: 'fixed', top: 62, right: 0, bottom: 0, width: 340, background: '#FFFFFF', borderLeft: '1px solid #EEF0F6', display: 'flex', flexDirection: 'column', zIndex: 55, boxShadow: '-4px 0 24px rgba(0,0,0,0.07)' }}>
 
@@ -159,6 +194,15 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, flexDirection: isMine ? 'row-reverse' : 'row' }}>
                         {msg.type === 'POLL' && msg.poll ? (
                           <PollCard poll={msg.poll} currentUserId={currentUserId} isMine={isMine} onVote={handleVote} />
+                        ) : msg.type === 'IMAGE' ? (
+                          <img
+                            src={msg.contenu}
+                            alt={msg.fileName ?? 'image'}
+                            onClick={() => setLightboxSrc(msg.contenu)}
+                            style={{ maxWidth: 220, maxHeight: 180, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid #EEF0F6' }}
+                          />
+                        ) : msg.type === 'FILE' ? (
+                          <FileCard contenu={msg.contenu} fileName={msg.fileName ?? 'fichier'} isMine={isMine} />
                         ) : (
                           <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
                             {msg.contenu}
@@ -195,11 +239,20 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
 
         {/* Input */}
         <div style={{ padding: '12px 14px', borderTop: '1px solid #F0F2F8', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-          <button
-            onClick={() => setShowPollForm(v => !v)}
-            title="Créer un sondage"
-            style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0, border: `1.5px solid ${showPollForm ? '#4F46E5' : '#EEF0F6'}`, background: showPollForm ? '#EEF2FF' : '#F8FAFC', color: showPollForm ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >📊</button>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={() => setShowAttach(v => !v)}
+              title="Joindre"
+              style={{ width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${showAttach ? '#4F46E5' : '#EEF0F6'}`, background: showAttach ? '#EEF2FF' : '#F8FAFC', color: showAttach ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+            >+</button>
+            <AttachMenu
+              open={showAttach}
+              onClose={() => setShowAttach(false)}
+              onPoll={() => { setShowPollForm(true); setShowAttach(false); }}
+              onImage={handleAttachImage}
+              onFile={handleAttachFile}
+            />
+          </div>
           <input
             ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
             placeholder="Écrire un message…" maxLength={1000}

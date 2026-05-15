@@ -27,4 +27,7 @@ export const projectsApi = {
 
   removeProjectTeamMember: (projectId: string, userId: string) =>
     axiosInstance.delete(`/projects/${projectId}/team/${userId}`),
+
+  deleteProject: (id: string) =>
+    axiosInstance.delete(`/projects/${id}`),
 };

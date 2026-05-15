@@ -14,6 +14,8 @@ class LogStore {
   private listeners: Set<Listener> = new Set();
   private counter = 0;
   private MAX = 150;
+  private lastAddedAt = 0;
+  private lastMessage = '';
 
   constructor() {
     this.push('INITIALISATION DU COMMAND CENTER ...', 'system');
@@ -32,6 +34,12 @@ class LogStore {
   }
 
   add(message: string, type: LogType = 'info') {
+    const now = Date.now();
+    const upper = message.toUpperCase();
+    // Ignore exact duplicate within 400ms (React StrictMode double-fire guard)
+    if (upper === this.lastMessage && now - this.lastAddedAt < 400) return;
+    this.lastMessage = upper;
+    this.lastAddedAt = now;
     this.push(message, type);
   }
 

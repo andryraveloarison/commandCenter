@@ -323,6 +323,9 @@ body {
 .msg-time { opacity: 0; transition: opacity 0.15s; }
 .msg-row:hover .msg-time { opacity: 1; }
 
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* Notification slide-in */
 @keyframes slide-in {
   from { opacity: 0; transform: translateX(24px); }

@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Param, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { IsString, IsNotEmpty, MaxLength, IsArray, ArrayMinSize, IsNumber, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, MaxLength, IsArray, ArrayMinSize, IsNumber, Min } from 'class-validator';
 import { ChatService } from './chat.service';
 
 class SendMessageDto {
@@ -8,6 +8,20 @@ class SendMessageDto {
   @IsNotEmpty()
   @MaxLength(1000)
   contenu: string;
+}
+
+class SendMediaDto {
+  @IsString()
+  @IsNotEmpty()
+  type: 'IMAGE' | 'FILE';
+
+  @IsString()
+  @IsNotEmpty()
+  contenu: string; // base64 data URL
+
+  @IsString()
+  @IsOptional()
+  fileName?: string;
 }
 
 class CreatePollDto {
@@ -33,8 +47,8 @@ export class ChatController {
   constructor(private chatService: ChatService) {}
 
   @Get()
-  findAll() {
-    return this.chatService.findAll();
+  findAll(@Query('limit') limit?: string, @Query('before') before?: string) {
+    return this.chatService.findAll(limit ? parseInt(limit, 10) : 20, before);
   }
 
   @Get('count')
@@ -50,6 +64,11 @@ export class ChatController {
   @Post()
   create(@Body() dto: SendMessageDto, @Request() req) {
     return this.chatService.create(req.user.id, dto.contenu);
+  }
+
+  @Post('media')
+  sendMedia(@Body() dto: SendMediaDto, @Request() req) {
+    return this.chatService.createMedia(req.user.id, dto.type, dto.contenu, dto.fileName);
   }
 
   @Post('poll')

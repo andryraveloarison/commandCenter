@@ -186,9 +186,12 @@ export class TasksService {
   async remove(id: string, userId?: string) {
     const task = await this.prisma.task.findUnique({ where: { id } });
     const deleted = await this.prisma.task.delete({ where: { id } });
-    if (task && !task.parentId) {
-      const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
-      await projectsService.calculateProgress(task.projectId, userId, `Tâche supprimée : "${task.titre}"`);
+    if (task) {
+      this.chat.emitToAll('task:deleted', { taskId: id, titre: task.titre, projectId: task.projectId });
+      if (!task.parentId) {
+        const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma, this.chat);
+        await projectsService.calculateProgress(task.projectId, userId, `Tâche supprimée : "${task.titre}"`);
+      }
     }
     return deleted;
   }

@@ -237,12 +237,15 @@ model Attachment {
 enum MessageType {
   TEXT
   POLL
+  IMAGE
+  FILE
 }
 
 model Message {
   id        String        @id @default(cuid())
-  contenu   String
+  contenu   String        @db.Text
   type      MessageType   @default(TEXT)
+  fileName  String?
   pollId    String?       @unique
   userId    String
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -363,12 +366,14 @@ enum InterventionStatus {
 // ==================== PRIVATE MESSAGE ====================
 
 model PrivateMessage {
-  id         String   @id @default(cuid())
+  id         String      @id @default(cuid())
   senderId   String
   receiverId String
-  contenu    String
-  lu         Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  contenu    String      @db.Text
+  type       MessageType @default(TEXT)
+  fileName   String?
+  lu         Boolean     @default(false)
+  createdAt  DateTime    @default(now())
 
   sender   User @relation("SentPrivateMessages",     fields: [senderId],   references: [id], onDelete: Cascade)
   receiver User @relation("ReceivedPrivateMessages", fields: [receiverId], references: [id], onDelete: Cascade)

@@ -14,7 +14,7 @@ const WarRoomPage: React.FC = () => {
   }, []);
 
   const { data: projects = [] } = useQuery({
-    queryKey: ['projects-war-room'],
+    queryKey: ['projects'],
     queryFn: () => apiService.getProjects().then(r => r.data),
   });
 

@@ -12,12 +12,15 @@ const MESSAGE_INCLUDE = {
 export class ChatService {
   constructor(private prisma: PrismaService, private gateway: ChatGateway) {}
 
-  async findAll() {
-    return this.prisma.message.findMany({
-      take: 100,
-      orderBy: { createdAt: 'asc' },
+  async findAll(limit = 20, before?: string) {
+    const messages = await this.prisma.message.findMany({
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      where: before ? { createdAt: { lt: new Date(before) } } : undefined,
       include: MESSAGE_INCLUDE,
     });
+    const items = messages.reverse();
+    return { messages: items, hasMore: messages.length === limit };
   }
 
   async getUnreadCount(userId: string) {
@@ -60,6 +63,20 @@ export class ChatService {
     await this.prisma.messageRead.create({ data: { messageId: message.id, userId } });
 
     await this._notifyOthers(userId, message.user.nom, contenu);
+    this.gateway.emitGroupMessage(message);
+    return message;
+  }
+
+  async createMedia(userId: string, type: 'IMAGE' | 'FILE', contenu: string, fileName?: string) {
+    const message = await this.prisma.message.create({
+      data: { userId, contenu, type: type as any, fileName },
+      include: MESSAGE_INCLUDE,
+    });
+
+    await this.prisma.messageRead.create({ data: { messageId: message.id, userId } });
+
+    const preview = type === 'IMAGE' ? '📷 Image' : `📎 ${fileName ?? 'Fichier'}`;
+    await this._notifyOthers(userId, message.user.nom, preview);
     this.gateway.emitGroupMessage(message);
     return message;
   }

@@ -9,12 +9,12 @@ import {
   UseGuards,
   Request,
   Query,
-  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { DsiGuard } from '../common/guards/dsi.guard';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -54,11 +54,9 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @UseGuards(DsiGuard)
   @ApiOperation({ summary: 'Update user' })
-  async update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Request() req) {
-    if (dto.role !== undefined && req.user.role !== 'DSI') {
-      throw new ForbiddenException('Seul un DSI peut modifier les grades.');
-    }
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
