@@ -13,6 +13,14 @@ export const chatApi = {
   sendMediaMessage: (type: 'IMAGE' | 'FILE', contenu: string, fileName?: string) =>
     axiosInstance.post('/chat/media', { type, contenu, fileName }),
 
+  uploadChatFile: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return axiosInstance.post<{ url: string; fileName: string; mimeType: string }>('/chat/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
   createPoll: (question: string, options: string[]) =>
     axiosInstance.post('/chat/poll', { question, options }),
 

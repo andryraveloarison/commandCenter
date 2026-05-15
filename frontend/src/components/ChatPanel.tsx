@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '@store/store';
 import apiService from '@services/api';
+import { SERVER_ORIGIN } from '@services/api/client';
 import socketService from '@services/socket';
 import PollCard from './chat/PollCard';
 import CreatePollForm from './chat/CreatePollForm';
@@ -9,7 +10,8 @@ import AttachMenu from './chat/AttachMenu';
 import FileCard from './chat/FileCard';
 import type { GroupMessage, Poll } from './chat/chatTypes';
 import {
-  setGroupMessages, addGroupMessage, updateGroupReads, updateGroupPoll,
+  setGroupMessages, prependGroupMessages, setGroupLoadingMore,
+  addGroupMessage, updateGroupReads, updateGroupPoll,
 } from '@store/slices/messagesSlice';
 
 interface Props {
@@ -35,14 +37,20 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
   const [showPollForm, setShowPollForm] = useState(false);
   const [showAttach,   setShowAttach]   = useState(false);
   const [lightboxSrc,  setLightboxSrc]  = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef  = useRef<HTMLInputElement>(null);
+  const bottomRef    = useRef<HTMLDivElement>(null);
+  const scrollRef    = useRef<HTMLDivElement>(null);
+  const inputRef     = useRef<HTMLInputElement>(null);
+  const atBottomRef         = useRef(true);
+  const lastMsgIdRef        = useRef<string>('');
+  const firstMsgIdRef       = useRef<string>('');
+  const prevScrollHeight    = useRef<number | null>(null);
+  const loadingMoreRef      = useRef(false);
 
   // On open: use Redux cache; fetch only if empty
   useEffect(() => {
     if (!open) return;
     if (groupCache.items.length === 0) {
-      apiService.getMessages({ limit: 20 }).then(r => {
+      apiService.getMessages({ limit: 50 }).then(r => {
         dispatch(setGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
       }).catch(() => {});
     }
@@ -74,7 +82,54 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
     return () => socketService.off('message:read', handler);
   }, [currentUserId]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  // Load older messages — save scrollHeight BEFORE dispatch, restore AFTER DOM update
+  const loadMore = useCallback(async () => {
+    if (!groupCache.hasMore || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    const el = scrollRef.current;
+    prevScrollHeight.current = el?.scrollHeight ?? 0; // must be captured synchronously, before the await
+    dispatch(setGroupLoadingMore(true));
+    try {
+      const oldest = messages[0];
+      const r = await apiService.getMessages({ limit: 50, before: oldest?.createdAt });
+      dispatch(prependGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
+    } catch {
+      loadingMoreRef.current = false;
+      dispatch(setGroupLoadingMore(false));
+    }
+  }, [groupCache.hasMore, messages]);
+
+  // Track if user is near bottom; trigger load-more when scrolled to top
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (el.scrollTop < 50) loadMore();
+  }, [loadMore]);
+
+  // Runs synchronously after DOM update, before paint — no scroll flicker
+  useLayoutEffect(() => {
+    if (messages.length === 0) return;
+    const el = scrollRef.current;
+    const lastId  = messages[messages.length - 1].id;
+    const firstId = messages[0].id;
+    const isInitial = lastMsgIdRef.current === '';
+    const isPrepend = !isInitial && firstId !== firstMsgIdRef.current && lastId === lastMsgIdRef.current;
+    const isAppend  = !isInitial && lastId !== lastMsgIdRef.current;
+
+    lastMsgIdRef.current  = lastId;
+    firstMsgIdRef.current = firstId;
+
+    if (isPrepend && prevScrollHeight.current !== null && el) {
+      el.scrollTop = el.scrollHeight - prevScrollHeight.current;
+      prevScrollHeight.current = null;
+      loadingMoreRef.current = false;
+    } else if (isInitial && el) {
+      el.scrollTop = el.scrollHeight;
+    } else if (isAppend && atBottomRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -94,20 +149,18 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
     try { await apiService.createPoll(question, options); } catch {}
   };
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleAttachImage = async (file: File) => {
-    try { await apiService.sendMediaMessage('IMAGE', await fileToBase64(file), file.name); } catch {}
+    try {
+      const { data } = await apiService.uploadChatFile(file);
+      await apiService.sendMediaMessage('IMAGE', data.url, data.fileName);
+    } catch {}
   };
 
   const handleAttachFile = async (file: File) => {
-    try { await apiService.sendMediaMessage('FILE', await fileToBase64(file), file.name); } catch {}
+    try {
+      const { data } = await apiService.uploadChatFile(file);
+      await apiService.sendMediaMessage('FILE', data.url, data.fileName);
+    } catch {}
   };
 
   const handleVote = async (pollId: string, optionIndex: number) => {
@@ -116,6 +169,10 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
       dispatch(updateGroupPoll(res.data));
     } catch {}
   };
+
+  // Converts a server-relative path (/uploads/...) to a full URL
+  const toFileUrl = (contenu: string) =>
+    contenu.startsWith('/') ? `${SERVER_ORIGIN}${contenu}` : contenu;
 
   const formatTime = (iso: string) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const formatDate = (iso: string) => {
@@ -164,8 +221,13 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {groups.length === 0 && (
+        <div ref={scrollRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {groupCache.loadingMore && (
+            <div style={{ textAlign: 'center', padding: '6px 0', fontSize: 10, fontWeight: 600, color: '#C4C9D4' }}>
+              Chargement…
+            </div>
+          )}
+          {groups.length === 0 && !groupCache.loadingMore && (
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <p style={{ color: '#C4C9D4', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>Aucun message.<br />Soyez le premier à écrire !</p>
             </div>
@@ -196,13 +258,13 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
                           <PollCard poll={msg.poll} currentUserId={currentUserId} isMine={isMine} onVote={handleVote} />
                         ) : msg.type === 'IMAGE' ? (
                           <img
-                            src={msg.contenu}
+                            src={toFileUrl(msg.contenu)}
                             alt={msg.fileName ?? 'image'}
-                            onClick={() => setLightboxSrc(msg.contenu)}
+                            onClick={() => setLightboxSrc(toFileUrl(msg.contenu))}
                             style={{ maxWidth: 220, maxHeight: 180, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid #EEF0F6' }}
                           />
                         ) : msg.type === 'FILE' ? (
-                          <FileCard contenu={msg.contenu} fileName={msg.fileName ?? 'fichier'} isMine={isMine} />
+                          <FileCard contenu={toFileUrl(msg.contenu)} fileName={msg.fileName ?? 'fichier'} isMine={isMine} />
                         ) : (
                           <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
                             {msg.contenu}

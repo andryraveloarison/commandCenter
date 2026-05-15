@@ -19,12 +19,12 @@ interface Props {
   users: any[];
   projStatusData: DonutStat[];
   taskStatusData: DonutStat[];
-  prioData: DonutStat[];
+  intervStatusData: DonutStat[];
 }
 
 const DashboardGlobalSection: React.FC<Props> = ({
   projects, filteredTasks, filteredInterventions, users,
-  projStatusData, taskStatusData, prioData,
+  projStatusData, taskStatusData, intervStatusData,
 }) => (
   <div className="space-y-8">
     <DashboardSectionHeader label="Vue d'ensemble" title="Global" />
@@ -47,29 +47,36 @@ const DashboardGlobalSection: React.FC<Props> = ({
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {[
-        { title: 'Statuts Projets', data: projStatusData },
-        { title: 'Statuts Tâches',  data: taskStatusData },
-        { title: 'Priorités',       data: prioData },
-      ].map(({ title, data }) => (
-        <div key={title} className="premium-card">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">{title}</p>
-          {data.length > 0 ? (
-            <>
-              <div className="h-[190px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={data} cx="50%" cy="50%" innerRadius={52} outerRadius={86} paddingAngle={3} dataKey="value" labelLine={false} label={DashboardDonutLabel}>
-                      {data.map((d, i) => <Cell key={i} fill={d.color} />)}
-                    </Pie>
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <DashboardLegend items={data} />
-            </>
-          ) : <div className="h-[190px]"><DashboardEmpty /></div>}
-        </div>
-      ))}
+        { title: 'Statuts Projets',       data: projStatusData },
+        { title: 'Statuts Tâches',        data: taskStatusData },
+        { title: 'Statuts Interventions', data: intervStatusData },
+      ].map(({ title, data }) => {
+        const total = data.reduce((s, d) => s + d.value, 0);
+        const unit  = title.includes('Projet') ? 'projet' : title.includes('Tâche') ? 'tâche' : 'intervention';
+        return (
+          <div key={title} className="premium-card">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">{title}</p>
+            {data.length > 0 ? (
+              <>
+                <div className="h-[190px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={data} cx="50%" cy="50%" innerRadius={52} outerRadius={86} paddingAngle={3} dataKey="value" nameKey="label" labelLine={false} label={DashboardDonutLabel}>
+                        {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={TOOLTIP_STYLE}
+                        formatter={(value: number) => `${value} ${unit}${value !== 1 ? 's' : ''}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <DashboardLegend items={data} />
+              </>
+            ) : <div className="h-[190px]"><DashboardEmpty /></div>}
+          </div>
+        );
+      })}
     </div>
   </div>
 );

@@ -98,7 +98,7 @@ const pageTitles: Record<string, string> = {
   '/projects': 'Projets',
   '/calendar': 'Calendrier',
   '/interventions': 'Interventions',
-  '/users': 'Équipe',
+  '/users': 'Squads',
   '/messages': 'Messages',
   '/settings': 'Configuration',
 };

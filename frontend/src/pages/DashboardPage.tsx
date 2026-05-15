@@ -11,8 +11,10 @@ import {
   avatarColor,
   getPeriodRange, filterByRange, buildEvolution,
 } from '@components/dashboard';
+import type { DashboardView } from '@components/dashboard';
 
 const DashboardPage: React.FC = () => {
+  const [view,        setView]        = useState<DashboardView>('global');
   const [period, setPeriod]           = useState<Period>('annee');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd]     = useState('');
@@ -110,45 +112,79 @@ const DashboardPage: React.FC = () => {
     .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 6);
 
+  const siteData = (() => {
+    const map = new Map<string, number>();
+    filteredInterventions.forEach((iv: any) => {
+      const nom = iv.site?.nom ?? 'Sans site';
+      map.set(nom, (map.get(nom) ?? 0) + 1);
+    });
+    const colors = ['#6366F1','#10B981','#F59E0B','#EF4444','#3B82F6','#8B5CF6','#14B8A6','#EC4899'];
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, value], i) => ({ label, value, color: colors[i % colors.length] }));
+  })();
+
+  const demandeurRanking = (() => {
+    const map = new Map<string, number>();
+    filteredInterventions.forEach((iv: any) => {
+      const nom = iv.demandeur?.nom ?? 'Inconnu';
+      map.set(nom, (map.get(nom) ?? 0) + 1);
+    });
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([nom, count]) => ({ nom, count }));
+  })();
+
   return (
     <div className="space-y-14 pb-4">
       <DashboardPeriodFilter
+        view={view} setView={setView}
         period={period} setPeriod={setPeriod}
         customStart={customStart} setCustomStart={setCustomStart}
         customEnd={customEnd} setCustomEnd={setCustomEnd}
         range={range}
       />
 
-      <DashboardGlobalSection
-        projects={projects}
-        filteredTasks={filteredTasks}
-        filteredInterventions={filteredInterventions}
-        users={users}
-        projStatusData={projStatusData}
-        taskStatusData={taskStatusData}
-        prioData={prioData}
-      />
+      {(view === 'global') && (
+        <DashboardGlobalSection
+          projects={projects}
+          filteredTasks={filteredTasks}
+          filteredInterventions={filteredInterventions}
+          users={users}
+          projStatusData={projStatusData}
+          taskStatusData={taskStatusData}
+          intervStatusData={intervStatusData}
+        />
+      )}
 
-      <DashboardProjectsSection
-        projects={projects}
-        filteredTasks={filteredTasks}
-        evolutionData={evolutionData}
-        tasksByUser={tasksByUser}
-        ranking={ranking}
-        projProgressData={projProgressData}
-        radarData={radarData}
-        radarProjects={radarProjects}
-      />
+      {(view === 'projets') && (
+        <DashboardProjectsSection
+          projects={projects}
+          filteredTasks={filteredTasks}
+          evolutionData={evolutionData}
+          tasksByUser={tasksByUser}
+          ranking={ranking}
+          projProgressData={projProgressData}
+          radarData={radarData}
+          radarProjects={radarProjects}
+        />
+      )}
 
-      <DashboardInterventionsSection
-        filteredInterventions={filteredInterventions}
-        intervStats={intervStats}
-        intervStatusData={intervStatusData}
-        intervByUser={intervByUser}
-        intervRanking={intervRanking}
-        intervEvolution={intervEvolution}
-        recentInterventions={recentInterventions}
-      />
+      {(view === 'interventions') && (
+        <DashboardInterventionsSection
+          filteredInterventions={filteredInterventions}
+          intervStats={intervStats}
+          intervStatusData={intervStatusData}
+          intervByUser={intervByUser}
+          intervRanking={intervRanking}
+          intervEvolution={intervEvolution}
+          recentInterventions={recentInterventions}
+          siteData={siteData}
+          demandeurRanking={demandeurRanking}
+          period={period}
+        />
+      )}
     </div>
   );
 };

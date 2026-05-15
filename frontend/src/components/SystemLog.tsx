@@ -19,14 +19,14 @@ const TYPE_PREFIX: Record<string, string> = {
 
 const SystemLog: React.FC = () => {
   const [entries, setEntries] = useState<LogEntry[]>(() => logStore.getAll());
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return logStore.subscribe(setEntries);
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) containerRef.current.scrollTop = 0;
   }, [entries]);
 
   return (
@@ -54,7 +54,7 @@ const SystemLog: React.FC = () => {
       </div>
 
       {/* Log entries */}
-      <div className="font-mono text-[11px] h-44 overflow-y-auto px-4 py-3 space-y-1.5 custom-scrollbar" style={{ color: '#94a3b8' }}>
+      <div ref={containerRef} className="font-mono text-[11px] h-44 overflow-y-auto px-4 py-3 space-y-1.5 custom-scrollbar" style={{ color: '#94a3b8' }}>
         {[...entries].reverse().map(entry => (
           <div key={entry.id} className="flex items-start gap-2">
             <span className="flex-shrink-0 text-[9px]" style={{ color: '#ffffff18' }}>[{entry.time}]</span>
@@ -68,7 +68,6 @@ const SystemLog: React.FC = () => {
           <span className="animate-pulse">▋</span>
           <span className="text-[10px] italic">En attente de nouvelles entrées...</span>
         </div>
-        <div ref={bottomRef} />
       </div>
     </div>
   );

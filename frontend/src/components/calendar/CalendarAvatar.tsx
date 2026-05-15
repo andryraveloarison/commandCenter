@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface Props {
-  user: { nom: string; photo?: string };
+  user: { username?: string; nom: string; photo?: string };
   size?: number;
 }
 
@@ -14,7 +14,7 @@ const CalendarAvatar: React.FC<Props> = ({ user, size = 28 }) => (
   }}>
     {user.photo
       ? <img src={user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-      : <span style={{ fontSize: size * 0.38, fontWeight: 800, color: '#6366f1' }}>{user.nom[0]}</span>
+      : <span style={{ fontSize: size * 0.38, fontWeight: 800, color: '#6366f1' }}>{(user.username ?? user.nom)[0].toUpperCase()}</span>
     }
   </div>
 );

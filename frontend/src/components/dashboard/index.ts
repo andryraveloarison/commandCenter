@@ -1,4 +1,5 @@
 export { default as DashboardPeriodFilter } from './DashboardPeriodFilter';
+export type { DashboardView } from './DashboardPeriodFilter';
 export { default as DashboardGlobalSection } from './DashboardGlobalSection';
 export { default as DashboardProjectsSection } from './DashboardProjectsSection';
 export { default as DashboardInterventionsSection } from './DashboardInterventionsSection';

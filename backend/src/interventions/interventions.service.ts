@@ -4,7 +4,7 @@ import { ChatGateway } from '../chat/chat.gateway';
 
 const INCLUDE = {
   intervenants: {
-    include: { user: { select: { id: true, nom: true, photo: true, role: true } } },
+    include: { user: { select: { id: true, username: true, nom: true, photo: true, role: true } } },
   },
   demandeur: { include: { site: true } },
   site:      true,

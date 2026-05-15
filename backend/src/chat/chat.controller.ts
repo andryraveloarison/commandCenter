@@ -1,5 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller, Get, Post, Body, Param, Query, Request,
+  UseGuards, UseInterceptors, UploadedFile, BadRequestException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { existsSync, mkdirSync } from 'fs';
 import { IsString, IsNotEmpty, IsOptional, MaxLength, IsArray, ArrayMinSize, IsNumber, Min } from 'class-validator';
 import { ChatService } from './chat.service';
 
@@ -17,7 +24,7 @@ class SendMediaDto {
 
   @IsString()
   @IsNotEmpty()
-  contenu: string; // base64 data URL
+  contenu: string; // server-relative URL (/uploads/...) or legacy base64
 
   @IsString()
   @IsOptional()
@@ -40,6 +47,19 @@ class VotePollDto {
   @Min(0)
   optionIndex: number;
 }
+
+const UPLOADS_DIR = join(process.cwd(), 'uploads');
+
+const multerStorage = diskStorage({
+  destination: (_req, _file, cb) => {
+    if (!existsSync(UPLOADS_DIR)) mkdirSync(UPLOADS_DIR, { recursive: true });
+    cb(null, UPLOADS_DIR);
+  },
+  filename: (_req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+    cb(null, `${unique}${extname(file.originalname)}`);
+  },
+});
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -79,5 +99,16 @@ export class ChatController {
   @Post('poll/:pollId/vote')
   votePoll(@Param('pollId') pollId: string, @Body() dto: VotePollDto, @Request() req) {
     return this.chatService.votePoll(pollId, req.user.id, dto.optionIndex);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', { storage: multerStorage, limits: { fileSize: 10 * 1024 * 1024 } }))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Aucun fichier reçu');
+    return {
+      url: `/uploads/${file.filename}`,
+      fileName: file.originalname,
+      mimeType: file.mimetype,
+    };
   }
 }

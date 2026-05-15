@@ -7,7 +7,7 @@ import SpellCheckButton from '@components/partials/SpellCheckButton';
 /* ── Types ─────────────────────────────────────────────────────────────── */
 interface Site       { id: string; nom: string; }
 interface Demandeur  { id: string; nom: string; siteId?: string; site?: Site; }
-interface UserBrief  { id: string; nom: string; photo?: string; role: string; }
+interface UserBrief  { id: string; username: string; nom: string; photo?: string; role: string; }
 interface IntervenantRow { user: UserBrief; }
 interface Intervention {
   id: string; probleme: string; solution?: string;
@@ -100,7 +100,7 @@ const IntervenantsPicker: React.FC<{
               {isChecked && '✓'}
             </div>
             <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-              {u.photo ? <img src={u.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : u.nom[0]}
+              {u.photo ? <img src={u.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : u.username[0].toUpperCase()}
             </div>
             <div>
               <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>@{u.username}</p>
@@ -309,7 +309,7 @@ const InterventionsPage: React.FC = () => {
     const matchStatus = filter === 'Tous' || i.statut === filter;
     const matchPeriod = isInPeriod(i.createdAt, period);
     const q = search.toLowerCase();
-    const intervenantMatch = i.intervenants.some(iv => (iv.user.username ?? iv.user.nom).toLowerCase().includes(q));
+    const intervenantMatch = i.intervenants.some(iv => iv.user.username.toLowerCase().includes(q));
     const matchSearch = !q || i.probleme.toLowerCase().includes(q) || i.site?.nom.toLowerCase().includes(q) || i.demandeur?.nom.toLowerCase().includes(q) || intervenantMatch;
     return matchStatus && matchPeriod && matchSearch;
   });
@@ -425,8 +425,8 @@ const InterventionsPage: React.FC = () => {
                       {/* Stacked avatars */}
                       <div style={{ display: 'flex' }}>
                         {iv.intervenants.slice(0, 4).map((ir, i) => (
-                          <div key={ir.user.id} title={`@${ir.user.username ?? ir.user.nom}`} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
-                            {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : (ir.user.username?.[0] ?? ir.user.nom[0])}
+                          <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
+                            {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.username[0].toUpperCase()}
                           </div>
                         ))}
                         {iv.intervenants.length > 4 && (
@@ -436,7 +436,7 @@ const InterventionsPage: React.FC = () => {
                         )}
                       </div>
                       {iv.intervenants.length === 1 && (
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username ?? iv.intervenants[0].user.nom}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username}</span>
                       )}
                     </div>
                   ) : <span style={{ color: '#D1D5DB', fontSize: 12 }}>—</span>}

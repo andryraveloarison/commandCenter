@@ -41,6 +41,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - uploads_data:/app/uploads
     networks:
       - commandcenter-network
     command: sh -c "npx prisma generate && npx prisma db push --accept-data-loss && npm run start:dev"
@@ -87,6 +88,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
 
 networks:
   commandcenter-network:

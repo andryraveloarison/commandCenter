@@ -72,7 +72,7 @@ const CalendarInterventionView: React.FC<Props> = ({ interventions, year, month,
                         >
                           {iv.intervenants?.[0]?.user.photo
                             ? <img src={iv.intervenants[0].user.photo} style={{ width: 14, height: 14, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} alt="" />
-                            : <span style={{ fontSize: 9, fontWeight: 800, color: cfg.color, flexShrink: 0 }}>{iv.intervenants?.[0]?.user.nom[0] || '?'}</span>
+                            : <span style={{ fontSize: 9, fontWeight: 800, color: cfg.color, flexShrink: 0 }}>{iv.intervenants?.[0]?.user.username?.[0]?.toUpperCase() || '?'}</span>
                           }
                           <span style={{ fontSize: 10, fontWeight: 700, color: cfg.color, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {iv.probleme}

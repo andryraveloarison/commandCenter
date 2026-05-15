@@ -49,7 +49,7 @@ const CalendarInterventionPanel: React.FC<Props> = ({ iv, onClose }) => {
                 <div key={ir.user.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <CalendarAvatar user={ir.user} size={30} />
                   <div>
-                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1A1D2E' }}>@{(ir.user as any).username ?? ir.user.nom}</p>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#1A1D2E' }}>@{ir.user.username}</p>
                     <p style={{ margin: '1px 0 0', fontSize: 10, color: '#9CA3AF' }}>{ir.user.role}</p>
                   </div>
                 </div>

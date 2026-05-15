@@ -6,7 +6,7 @@ export type ViewMode = 'month' | 'gantt' | 'list';
 export type ContentType = 'projets' | 'interventions';
 
 export interface IntervenantRow {
-  user: { id: string; nom: string; photo?: string; role: string };
+  user: { id: string; username: string; nom: string; photo?: string; role: string };
 }
 
 export interface LocalIntervention {

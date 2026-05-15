@@ -12,7 +12,7 @@ const MESSAGE_INCLUDE = {
 export class ChatService {
   constructor(private prisma: PrismaService, private gateway: ChatGateway) {}
 
-  async findAll(limit = 20, before?: string) {
+  async findAll(limit = 50, before?: string) {
     const messages = await this.prisma.message.findMany({
       take: limit,
       orderBy: { createdAt: 'desc' },

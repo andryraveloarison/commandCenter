@@ -1,10 +1,12 @@
 import React from 'react';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { TOOLTIP_STYLE, STATUS_INTERV, avatarColor, fmtDate } from './dashboardTypes';
+import type { Period } from './dashboardTypes';
 import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardDonutLabel from './DashboardDonutLabel';
 import DashboardLegend from './DashboardLegend';
@@ -25,6 +27,9 @@ interface Props {
   intervRanking: any[];
   intervEvolution: any[];
   recentInterventions: any[];
+  siteData: { label: string; value: number; color: string }[];
+  demandeurRanking: { nom: string; count: number }[];
+  period: Period;
 }
 
 const LEGEND_INTERV = [
@@ -33,9 +38,18 @@ const LEGEND_INTERV = [
   { label: 'En attente', color: '#F59E0B' },
 ];
 
+const PERIOD_LABEL: Record<string, string> = {
+  semaine: 'par jour',
+  mois:    'par semaine',
+  annee:   'par mois',
+  tout:    'par mois',
+  custom:  'sur la période',
+};
+
 const DashboardInterventionsSection: React.FC<Props> = ({
   intervStats, intervStatusData, intervByUser,
   intervRanking, intervEvolution, recentInterventions,
+  siteData, demandeurRanking, period,
 }) => (
   <div className="space-y-8">
     <DashboardSectionHeader label="Support IT" title="Interventions" linkTo="/interventions" linkLabel="Voir toutes les interventions" />
@@ -57,23 +71,68 @@ const DashboardInterventionsSection: React.FC<Props> = ({
       ))}
     </div>
 
-    {/* Donut + bar by technician */}
+    {/* Evolution curve — full width */}
+    <div className="premium-card">
+      <div className="mb-6">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historique</p>
+        <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">
+          Courbe des Interventions <span className="text-slate-300 font-medium normal-case text-base">{PERIOD_LABEL[period]}</span>
+        </h2>
+      </div>
+      {intervEvolution.some((d: any) => d.total > 0) ? (
+        <>
+          <div className="h-[230px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={intervEvolution} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="gradResolu"    x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#10B981" stopOpacity={0.18} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradEnCours"   x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#3B82F6" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradEnAttente" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%"  stopColor="#F59E0B" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                <XAxis dataKey="label" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
+                <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} allowDecimals={false} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Area type="monotone" dataKey="resolu"    name="Résolues"   stroke="#10B981" strokeWidth={2} fill="url(#gradResolu)"    dot={false} activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="enCours"   name="En cours"   stroke="#3B82F6" strokeWidth={2} fill="url(#gradEnCours)"   dot={false} activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="enAttente" name="En attente" stroke="#F59E0B" strokeWidth={2} fill="url(#gradEnAttente)" dot={false} activeDot={{ r: 4 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <DashboardLegend items={LEGEND_INTERV} />
+        </>
+      ) : <div className="h-[230px]"><DashboardEmpty /></div>}
+    </div>
+
+    {/* Site donut + bar by technician */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="premium-card">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-5">Répartition statuts</p>
-        {intervStatusData.length > 0 ? (
+        <div className="mb-5">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Répartition</p>
+          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Sites</h2>
+        </div>
+        {siteData.length > 0 ? (
           <>
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={intervStatusData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" labelLine={false} label={DashboardDonutLabel}>
-                    {intervStatusData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                  <Pie data={siteData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value" nameKey="label" labelLine={false} label={DashboardDonutLabel}>
+                    {siteData.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => `${value} intervention${value !== 1 ? 's' : ''}`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <DashboardLegend items={intervStatusData} />
+            <DashboardLegend items={siteData} />
           </>
         ) : <div className="h-[200px]"><DashboardEmpty /></div>}
       </div>
@@ -92,9 +151,9 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                   <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="resolu"    name="Résolues"    stackId="a" fill="#10B981" />
-                  <Bar dataKey="enCours"   name="En cours"    stackId="a" fill="#3B82F6" />
-                  <Bar dataKey="enAttente" name="En attente"  stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="resolu"    name="Résolues"   stackId="a" fill="#10B981" />
+                  <Bar dataKey="enCours"   name="En cours"   stackId="a" fill="#3B82F6" />
+                  <Bar dataKey="enAttente" name="En attente" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -104,31 +163,42 @@ const DashboardInterventionsSection: React.FC<Props> = ({
       </div>
     </div>
 
-    {/* Evolution + Top technician */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 premium-card">
-        <div className="mb-6">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Historique</p>
-          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Évolution des Interventions</h2>
+    {/* Demandeurs ranking + Top technicians */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="premium-card">
+        <div className="mb-5">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Classement</p>
+          <h2 className="text-xl font-black text-slate-900 font-montserrat uppercase tracking-tight mt-1">Top Demandeurs</h2>
         </div>
-        {intervEvolution.some((d: any) => d.total > 0) ? (
-          <>
-            <div className="h-[230px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={intervEvolution} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                  <CartesianGrid stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="label" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
-                  <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} allowDecimals={false} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="resolu"    name="Résolues"   stackId="a" fill="#10B981" />
-                  <Bar dataKey="enCours"   name="En cours"   stackId="a" fill="#3B82F6" />
-                  <Bar dataKey="enAttente" name="En attente" stackId="a" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <DashboardLegend items={LEGEND_INTERV} />
-          </>
-        ) : <div className="h-[230px]"><DashboardEmpty /></div>}
+        {demandeurRanking.length > 0 ? (
+          <div className="space-y-4">
+            {demandeurRanking.map((d, i) => {
+              const maxCount = demandeurRanking[0].count;
+              return (
+                <div key={d.nom} className="flex items-center gap-3">
+                  <span className={`text-[11px] font-black w-5 text-center flex-shrink-0 ${i === 0 ? 'text-yellow-400' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-orange-400' : 'text-slate-200'}`}>
+                    #{i + 1}
+                  </span>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-black text-white flex-shrink-0"
+                    style={{ background: ['#6366F1','#10B981','#F59E0B','#EF4444','#3B82F6'][i] }}>
+                    {d.nom[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-black text-slate-900 uppercase truncate">{d.nom}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.round((d.count / maxCount) * 100)}%` }} />
+                      </div>
+                      <span className="text-[9px] font-black font-mono text-slate-400 flex-shrink-0">
+                        {d.count} intervention{d.count !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : <div className="h-[200px]"><DashboardEmpty /></div>}
       </div>
 
       <div className="premium-card">
@@ -150,7 +220,7 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                     <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden">
                       <div className="h-full rounded-full bg-emerald-500" style={{ width: `${u.rate}%` }} />
                     </div>
-                    <span className="text-[9px] font-black font-mono text-slate-400 flex-shrink-0">{u.rate}%</span>
+                    <span className="text-[9px] font-black font-mono text-slate-400 flex-shrink-0">{u.rate}% résolu</span>
                   </div>
                 </div>
               </div>
@@ -211,8 +281,8 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                           <div style={{ display: 'flex' }}>
                             {iv.intervenants.slice(0, 3).map((ir: any, i: number) => (
-                              <div key={ir.user.id} title={`@${ir.user.username ?? ir.user.nom}`} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
-                                {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : (ir.user.username?.[0] ?? ir.user.nom[0])}
+                              <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
+                                {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.username?.[0]?.toUpperCase()}
                               </div>
                             ))}
                             {iv.intervenants.length > 3 && (
@@ -222,7 +292,7 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                             )}
                           </div>
                           {iv.intervenants.length === 1 && (
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username ?? iv.intervenants[0].user.nom}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username}</span>
                           )}
                         </div>
                       ) : <span style={{ color: '#D1D5DB', fontSize: 11 }}>—</span>}
