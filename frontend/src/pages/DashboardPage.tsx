@@ -26,12 +26,19 @@ const DashboardPage: React.FC = () => {
 
   const range = useMemo(() => getPeriodRange(period, customStart, customEnd), [period, customStart, customEnd]);
 
-  const filteredTasks         = useMemo(() => filterByRange(tasks,         'createdAt', range), [tasks, range]);
-  const filteredInterventions = useMemo(() => filterByRange(interventions, 'createdAt', range), [interventions, range]);
+  const filteredProjects      = useMemo(() => filterByRange(projects, 'createdAt', range), [projects, range]);
+  const filteredTasks         = useMemo(() => {
+    const dated = tasks.map((t: any) => ({ ...t, _date: t.dateDebut ?? t.createdAt }));
+    return filterByRange(dated, '_date', range);
+  }, [tasks, range]);
+  const filteredInterventions = useMemo(() => {
+    const dated = interventions.map((i: any) => ({ ...i, _date: i.dateIntervention ?? i.createdAt }));
+    return filterByRange(dated, '_date', range);
+  }, [interventions, range]);
 
   // ── Projets data ────────────────────────────────────────────────────────────
   const projStatusData = Object.entries(STATUS_PROJ)
-    .map(([k, v]) => ({ ...v, value: projects.filter((p: any) => p.statut === k).length }))
+    .map(([k, v]) => ({ ...v, value: filteredProjects.filter((p: any) => p.statut === k).length }))
     .filter(d => d.value > 0);
 
   const taskStatusData = Object.entries(STATUS_TASK)
@@ -39,10 +46,10 @@ const DashboardPage: React.FC = () => {
     .filter(d => d.value > 0);
 
   const prioData = Object.entries(PRIO)
-    .map(([k, v]) => ({ ...v, value: projects.filter((p: any) => p.priorite === k).length }))
+    .map(([k, v]) => ({ ...v, value: filteredProjects.filter((p: any) => p.priorite === k).length }))
     .filter(d => d.value > 0);
 
-  const evolutionData = [...projects]
+  const evolutionData = [...filteredProjects]
     .sort((a: any, b: any) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime())
     .map((p: any) => ({ nom: p.nom.length > 14 ? p.nom.slice(0, 12) + '…' : p.nom, progression: Math.round(p.progressionGlobale) }));
 
@@ -61,11 +68,11 @@ const DashboardPage: React.FC = () => {
     .map((u: any) => ({ ...u, rate: u.total > 0 ? Math.round((u.done / u.total) * 100) : 0 }))
     .sort((a: any, b: any) => b.rate - a.rate || b.done - a.done);
 
-  const projProgressData = [...projects]
+  const projProgressData = [...filteredProjects]
     .sort((a: any, b: any) => b.progressionGlobale - a.progressionGlobale)
     .map((p: any) => ({ nom: p.nom.length > 16 ? p.nom.slice(0, 14) + '…' : p.nom, progression: Math.round(p.progressionGlobale), fill: STATUS_PROJ[p.statut]?.color ?? '#0f172a' }));
 
-  const radarProjects = projects.slice(0, 5);
+  const radarProjects = filteredProjects.slice(0, 5);
   const radarData = [
     { metric: 'Progression', ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.round(p.progressionGlobale)])) },
     { metric: 'Équipe',      ...Object.fromEntries(radarProjects.map((p: any) => [p.id, Math.min((p.teams?.length ?? 0) * 20, 100)])) },
@@ -148,7 +155,7 @@ const DashboardPage: React.FC = () => {
 
       {(view === 'global') && (
         <DashboardGlobalSection
-          projects={projects}
+          projects={filteredProjects}
           filteredTasks={filteredTasks}
           filteredInterventions={filteredInterventions}
           users={users}
@@ -160,7 +167,7 @@ const DashboardPage: React.FC = () => {
 
       {(view === 'projets') && (
         <DashboardProjectsSection
-          projects={projects}
+          projects={filteredProjects}
           filteredTasks={filteredTasks}
           evolutionData={evolutionData}
           tasksByUser={tasksByUser}

@@ -26,8 +26,8 @@ const FileCard: React.FC<Props> = ({ contenu, fileName, isMine }) => {
         display: 'flex', alignItems: 'center', gap: 10,
         padding: '10px 12px',
         borderRadius: 12,
-        background: isMine ? '#4F46E5' : '#F3F4F6',
-        border: isMine ? '1px solid #4338CA' : '1px solid #E5E7EB',
+        background: isMine ? '#4F46E5' : 'var(--bg-elevated)',
+        border: isMine ? '1px solid #4338CA' : '1px solid var(--border-color)',
         textDecoration: 'none',
         maxWidth: 240,
         minWidth: 180,
@@ -57,16 +57,16 @@ const FileCard: React.FC<Props> = ({ contenu, fileName, isMine }) => {
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
           margin: 0, fontWeight: 600, fontSize: 12.5,
-          color: isMine ? '#fff' : '#1A1D2E',
+          color: isMine ? '#fff' : 'var(--text-primary)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>{fileName}</p>
-        <p style={{ margin: '2px 0 0', fontSize: 10.5, color: isMine ? 'rgba(255,255,255,0.6)' : '#9CA3AF' }}>
+        <p style={{ margin: '2px 0 0', fontSize: 10.5, color: isMine ? 'rgba(255,255,255,0.6)' : 'var(--text-muted)' }}>
           Cliquer pour télécharger
         </p>
       </div>
 
       {/* Download arrow */}
-      <svg width={14} height={14} fill="none" stroke={isMine ? 'rgba(255,255,255,0.7)' : '#9CA3AF'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+      <svg width={14} height={14} fill="none" stroke={isMine ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)'} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />

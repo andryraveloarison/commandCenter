@@ -56,11 +56,11 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
   };
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #EEF0F6', overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+    <div style={{ background: 'var(--bg-card)', borderRadius: 20, border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
       {/* Header row */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #F1F5F9' }}>
-        <div style={{ width: LEFT_W, flexShrink: 0, borderRight: '1px solid #F1F5F9', padding: '14px 16px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Projet / Tâche</span>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div style={{ width: LEFT_W, flexShrink: 0, borderRight: '1px solid var(--border-subtle)', padding: '14px 16px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Projet / Tâche</span>
         </div>
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {days.map((d, i) => {
@@ -68,13 +68,13 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
             return (
               <div key={i} style={{
                 textAlign: 'center', padding: '10px 4px',
-                borderRight: i < 6 ? '1px solid #F1F5F9' : 'none',
-                background: isToday ? '#F0F0FF' : 'transparent',
+                borderRight: i < 6 ? '1px solid var(--border-subtle)' : 'none',
+                background: isToday ? 'var(--bg-active)' : 'transparent',
               }}>
-                <div style={{ fontSize: 9, fontWeight: 800, color: isToday ? '#6366f1' : '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <div style={{ fontSize: 9, fontWeight: 800, color: isToday ? '#6366f1' : 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                   {DAY_NAMES[i]}
                 </div>
-                <div style={{ fontSize: 13, fontWeight: isToday ? 800 : 600, color: isToday ? '#6366f1' : '#9CA3AF', marginTop: 2 }}>
+                <div style={{ fontSize: 13, fontWeight: isToday ? 800 : 600, color: isToday ? '#6366f1' : 'var(--text-muted)', marginTop: 2 }}>
                   {d.getDate()}
                 </div>
               </div>
@@ -84,7 +84,7 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
       </div>
 
       {projectIds.length === 0 ? (
-        <div style={{ padding: '48px 24px', textAlign: 'center', color: '#C4C9D4', fontSize: 13, fontWeight: 600 }}>
+        <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13, fontWeight: 600 }}>
           Aucune tâche planifiée cette semaine
         </div>
       ) : projectIds.map((projectId, pi) => {
@@ -93,24 +93,24 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
         const totalH = HEADER_H + projectTasks.length * (ROW_H + 4);
 
         return (
-          <div key={projectId} style={{ display: 'flex', borderBottom: pi < projectIds.length - 1 ? '1px solid #F1F5F9' : 'none' }}>
+          <div key={projectId} style={{ display: 'flex', borderBottom: pi < projectIds.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
             {/* Left column */}
-            <div style={{ width: LEFT_W, flexShrink: 0, borderRight: '1px solid #F1F5F9' }}>
+            <div style={{ width: LEFT_W, flexShrink: 0, borderRight: '1px solid var(--border-subtle)' }}>
               <div style={{ height: HEADER_H, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
                 {project?.logo
                   ? <img src={project.logo} style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} alt="" />
-                  : <div style={{ width: 28, height: 28, borderRadius: 8, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#6366f1', flexShrink: 0 }}>
+                  : <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: 'var(--accent)', flexShrink: 0 }}>
                       {(project?.nom || 'P')[0]}
                     </div>
                 }
-                <span style={{ fontSize: 12, fontWeight: 800, color: '#1A1D2E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {project?.nom || 'Projet'}
                 </span>
               </div>
               {projectTasks.map(task => (
                 <div key={task.id} style={{ height: ROW_H, marginBottom: 4, padding: '0 16px 0 30px', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {task.assignee && <CalendarAvatar user={task.assignee} size={18} />}
-                  <span style={{ fontSize: 10, color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {task.titre}
                   </span>
                 </div>
@@ -124,8 +124,8 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
                 <div key={i} style={{
                   position: 'absolute', top: 0, bottom: 0,
                   left: `${(i / 7) * 100}%`, width: `${100 / 7}%`,
-                  background: d.getTime() === today.getTime() ? '#F8F8FF' : i % 2 === 0 ? 'transparent' : '#FAFBFC',
-                  borderRight: i < 6 ? '1px solid #F8FAFC' : 'none',
+                  background: d.getTime() === today.getTime() ? 'var(--bg-active)' : i % 2 === 0 ? 'transparent' : 'var(--bg-app)',
+                  borderRight: i < 6 ? '1px solid var(--border-subtle)' : 'none',
                 }} />
               ))}
 
@@ -134,7 +134,7 @@ const CalendarGanttView: React.FC<Props> = ({ tasks, projects, weekStart, onTask
                 <div style={{
                   position: 'absolute', top: 0, bottom: 0,
                   left: `${((todayIdx + 0.5) / 7) * 100}%`,
-                  width: 2, background: '#6366f1', opacity: 0.3, zIndex: 1,
+                  width: 2, background: 'var(--accent)', opacity: 0.35, zIndex: 1,
                 }} />
               )}
 

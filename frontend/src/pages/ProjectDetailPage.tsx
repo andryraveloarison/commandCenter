@@ -15,8 +15,13 @@ import TaskDetailModal from '@components/modals/TaskDetailModal';
 import UserStatsModal from '@components/modals/UserStatsModal';
 import { VersionHistoryList, VersionDetailPanel } from '@components/versions';
 import { useAppSelector } from '@hooks/useAppRedux';
+import { useTheme } from '@store/ThemeContext';
 
 const ProjectDetailPage: React.FC = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const LINE_COLOR  = isDark ? '#818CF8' : '#6366f1';
+  const GRID_COLOR  = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const currentUser = useAppSelector(s => s.auth.user);
@@ -258,7 +263,7 @@ const ProjectDetailPage: React.FC = () => {
                           }
                         }}
                       >
-                        <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                        <CartesianGrid stroke={GRID_COLOR} vertical={false} />
                         <XAxis dataKey="date" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                         <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} domain={[0, 100]} />
                         <ReferenceLine y={100} stroke="#22c55e" strokeDasharray="4 2" strokeWidth={1} />
@@ -270,7 +275,7 @@ const ProjectDetailPage: React.FC = () => {
                         <Line
                           type="monotone"
                           dataKey="progression"
-                          stroke="#0f172a"
+                          stroke={LINE_COLOR}
                           strokeWidth={2.5}
                           dot={(props: any) => {
                             const isSelected = selectedDay?.date === props.payload?.date;
@@ -279,13 +284,13 @@ const ProjectDetailPage: React.FC = () => {
                                 key={props.key}
                                 cx={props.cx} cy={props.cy}
                                 r={isSelected ? 7 : 4}
-                                fill="#0f172a"
-                                stroke={isSelected ? '#3b82f6' : '#fff'}
+                                fill={LINE_COLOR}
+                                stroke={isSelected ? '#3b82f6' : 'var(--bg-card)'}
                                 strokeWidth={isSelected ? 3 : 2}
                               />
                             );
                           }}
-                          activeDot={{ r: 7, fill: '#0f172a', stroke: '#3b82f6', strokeWidth: 3 }}
+                          activeDot={{ r: 7, fill: LINE_COLOR, stroke: '#3b82f6', strokeWidth: 3 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -297,18 +302,18 @@ const ProjectDetailPage: React.FC = () => {
                 )}
 
                 {selectedDay && (
-                  <div className="mt-5 border border-slate-100 rounded-2xl overflow-hidden">
-                    <div className="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                  <div className="mt-5 rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <div className="px-5 py-3 flex items-center justify-between" style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions du</span>
-                        <span className="text-sm font-black text-slate-900 font-mono">{selectedDay.date}</span>
-                        <span className="px-2 py-0.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-md font-mono">
+                        <span className="text-sm font-black font-mono" style={{ color: 'var(--text-primary)' }}>{selectedDay.date}</span>
+                        <span className="px-2 py-0.5 text-white text-[9px] font-black uppercase tracking-widest rounded-md font-mono" style={{ background: 'var(--accent)' }}>
                           {selectedDay.progression}%
                         </span>
                       </div>
                       <button onClick={() => setSelectedDay(null)} className="text-slate-300 hover:text-slate-900 font-black text-sm transition-colors">✕</button>
                     </div>
-                    <div className="divide-y divide-slate-50 bg-white max-h-48 overflow-y-auto">
+                    <div className="divide-y max-h-48 overflow-y-auto" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}>
                       {selectedDay.entries.length === 0 ? (
                         <p className="text-center text-slate-300 text-[10px] font-black uppercase py-6 tracking-widest">
                           Point de référence — aucune action enregistrée
@@ -341,8 +346,8 @@ const ProjectDetailPage: React.FC = () => {
               <div className="space-y-5">
                 <h2 className="premium-title text-sm">Modules & Tâches</h2>
                 {project.modules?.length ? project.modules.map(module => (
-                  <div key={module.id} className="border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="px-5 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                  <div key={module.id} className="rounded-2xl overflow-hidden shadow-sm" style={{ border: '1px solid var(--border-subtle)' }}>
+                    <div className="px-5 py-4 flex items-center justify-between" style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-subtle)' }}>
                       <div>
                         <h3 className="font-black text-slate-900 uppercase tracking-tight">{module.nom}</h3>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -357,7 +362,7 @@ const ProjectDetailPage: React.FC = () => {
                         <div className="text-right">
                           <p className="text-xl font-black font-mono text-slate-900">{Math.round(module.progression)}%</p>
                           <div className="w-20 h-1 bg-slate-200 rounded-full mt-1 overflow-hidden">
-                            <div className="bg-slate-900 h-full" style={{ width: `${module.progression}%` }} />
+                            <div className="h-full transition-all" style={{ width: `${module.progression}%`, background: 'var(--accent)' }} />
                           </div>
                         </div>
                         <button
@@ -383,7 +388,7 @@ const ProjectDetailPage: React.FC = () => {
                       </div>
                     </div>
                     {!collapsedModules.has(module.id) && (
-                      <div className="divide-y divide-slate-50/80 bg-white">
+                      <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
                         {module.tasks?.length ? module.tasks.map((task: any) => (
                           <SubTaskRow key={task.id} task={task} depth={0} projectId={id!} users={users} projectUsers={projectUsers} onRefresh={refresh} onTaskClick={setSelectedTaskId} />
                         )) : (
@@ -408,7 +413,7 @@ const ProjectDetailPage: React.FC = () => {
                   <span className="text-5xl font-black font-mono text-slate-900">{Math.round(project.progressionGlobale)}%</span>
                 </div>
                 <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${project.progressionGlobale}%`, backgroundColor: project.progressionGlobale >= 100 ? '#22c55e' : '#0f172a' }} />
+                  <div className="h-full rounded-full transition-all" style={{ width: `${project.progressionGlobale}%`, backgroundColor: project.progressionGlobale >= 100 ? '#22c55e' : 'var(--accent)' }} />
                 </div>
                 {project.progressionGlobale >= 100 && (
                   <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mt-2">✅ Projet terminé</p>

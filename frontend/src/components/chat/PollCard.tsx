@@ -14,14 +14,14 @@ const PollCard: React.FC<Props> = ({ poll, currentUserId, isMine, onVote }) => {
 
   return (
     <div style={{
-      background:   isMine ? '#3730A3' : '#F3F4F6',
-      border:       `1px solid ${isMine ? '#4338CA' : '#E5E7EB'}`,
+      background:   isMine ? '#3730A3' : 'var(--bg-elevated)',
+      border:       `1px solid ${isMine ? '#4338CA' : 'var(--border-color)'}`,
       borderRadius: 12,
       padding:      '12px 14px',
       minWidth:     200,
       maxWidth:     280,
     }}>
-      <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: isMine ? '#E0E7FF' : '#374151', lineHeight: 1.4 }}>
+      <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, color: isMine ? '#E0E7FF' : 'var(--text-primary)', lineHeight: 1.4 }}>
         📊 {poll.question}
       </p>
 
@@ -37,7 +37,7 @@ const PollCard: React.FC<Props> = ({ poll, currentUserId, isMine, onVote }) => {
               onClick={() => onVote(poll.id, idx)}
               style={{
                 position: 'relative', overflow: 'hidden',
-                border:       `1.5px solid ${isMyOpt ? '#818CF8' : isMine ? '#4338CA' : '#D1D5DB'}`,
+                border:       `1.5px solid ${isMyOpt ? '#818CF8' : isMine ? '#4338CA' : 'var(--border-color)'}`,
                 borderRadius: 8, padding: '7px 10px',
                 background:   'transparent', cursor: 'pointer', textAlign: 'left',
               }}
@@ -48,10 +48,10 @@ const PollCard: React.FC<Props> = ({ poll, currentUserId, isMine, onVote }) => {
                 transition: 'width 0.4s ease',
               }} />
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: isMine ? '#E0E7FF' : '#374151' }}>
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: isMine ? '#E0E7FF' : 'var(--text-sub)' }}>
                   {isMyOpt && '✓ '}{opt}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: isMine ? '#A5B4FC' : '#6B7280', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: isMine ? '#A5B4FC' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                   {pct}% · {count}
                 </span>
               </div>
@@ -60,7 +60,7 @@ const PollCard: React.FC<Props> = ({ poll, currentUserId, isMine, onVote }) => {
         })}
       </div>
 
-      <p style={{ margin: '8px 0 0', fontSize: 9.5, color: isMine ? '#A5B4FC' : '#9CA3AF', fontWeight: 500 }}>
+      <p style={{ margin: '8px 0 0', fontSize: 9.5, color: isMine ? '#A5B4FC' : 'var(--text-muted)', fontWeight: 500 }}>
         {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
       </p>
     </div>

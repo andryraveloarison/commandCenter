@@ -30,38 +30,38 @@ const CalendarUserFilter: React.FC<Props> = ({ users, value, onChange, currentUs
         style={{
           display: 'flex', alignItems: 'center', gap: 8,
           padding: '5px 10px 5px 6px', borderRadius: 10,
-          border: '1px solid #EEF0F6', background: '#fff',
+          border: '1px solid var(--border-color)', background: 'var(--bg-card)',
           cursor: 'pointer', fontSize: 12, fontWeight: 700,
-          color: '#1A1D2E', minWidth: 160,
+          color: 'var(--text-primary)', minWidth: 160,
         }}
       >
         {selected
           ? <CalendarAvatar user={selected} size={24} />
-          : <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EEF0F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>👥</div>
+          : <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--bg-icon)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, flexShrink: 0 }}>👥</div>
         }
         <span style={{ flex: 1, textAlign: 'left' }}>
           {selected ? selected.nom : "Toute l'équipe"}
-          {selected?.id === currentUserId && <span style={{ fontSize: 9, color: '#9CA3AF', marginLeft: 4 }}>moi</span>}
+          {selected?.id === currentUserId && <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 4 }}>moi</span>}
         </span>
-        <span style={{ fontSize: 10, color: '#9CA3AF', marginLeft: 4 }}>{open ? '▲' : '▼'}</span>
+        <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 4 }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200,
-          background: '#fff', borderRadius: 14, border: '1px solid #EEF0F6',
+          background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-color)',
           boxShadow: '0 8px 30px rgba(0,0,0,0.12)', minWidth: 200, overflow: 'hidden',
         }}>
           <button
             onClick={() => { onChange(''); setOpen(false); }}
             style={{
               display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-              padding: '10px 14px', border: 'none', borderBottom: '1px solid #F8FAFC',
-              background: value === '' ? '#EEF2FF' : 'transparent', cursor: 'pointer',
-              fontSize: 12, fontWeight: 700, color: value === '' ? '#6366f1' : '#1A1D2E',
+              padding: '10px 14px', border: 'none', borderBottom: '1px solid var(--border-subtle)',
+              background: value === '' ? 'var(--accent-soft)' : 'transparent', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700, color: value === '' ? 'var(--accent)' : 'var(--text-primary)',
             }}
           >
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: value === '' ? '#6366f1' : '#EEF0F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: value === '' ? 'var(--accent)' : 'var(--bg-icon)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>
               <span style={{ filter: value === '' ? 'brightness(10)' : 'none' }}>👥</span>
             </div>
             Toute l'équipe
@@ -73,22 +73,22 @@ const CalendarUserFilter: React.FC<Props> = ({ users, value, onChange, currentUs
               onClick={() => { onChange(u.id); setOpen(false); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                padding: '8px 14px', border: 'none', borderBottom: '1px solid #F8FAFC',
-                background: value === u.id ? '#EEF2FF' : 'transparent', cursor: 'pointer',
-                fontSize: 12, fontWeight: 600, color: value === u.id ? '#6366f1' : '#374151',
+                padding: '8px 14px', border: 'none', borderBottom: '1px solid var(--border-subtle)',
+                background: value === u.id ? 'var(--accent-soft)' : 'transparent', cursor: 'pointer',
+                fontSize: 12, fontWeight: 600, color: value === u.id ? 'var(--accent)' : 'var(--text-sub)',
               }}
-              onMouseEnter={e => { if (value !== u.id) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+              onMouseEnter={e => { if (value !== u.id) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
               onMouseLeave={e => { if (value !== u.id) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
               <CalendarAvatar user={u} size={32} />
               <div style={{ textAlign: 'left' }}>
                 <div>
                   @{u.username ?? u.nom}
-                  {u.id === currentUserId && <span style={{ fontSize: 9, color: '#9CA3AF', marginLeft: 4 }}>moi</span>}
+                  {u.id === currentUserId && <span style={{ fontSize: 9, color: 'var(--text-muted)', marginLeft: 4 }}>moi</span>}
                 </div>
-                <div style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500 }}>{u.role}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>{u.role}</div>
               </div>
-              {value === u.id && <span style={{ marginLeft: 'auto', color: '#6366f1', fontSize: 14 }}>✓</span>}
+              {value === u.id && <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: 14 }}>✓</span>}
             </button>
           ))}
         </div>

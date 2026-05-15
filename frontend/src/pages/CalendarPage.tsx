@@ -107,14 +107,14 @@ const CalendarPage: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={useWeekNav ? prevWeek : prevMonth}
-            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}
+            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--text-sub)' }}
           >‹</button>
-          <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: '#1A1D2E', fontFamily: 'Montserrat', minWidth: 200, textAlign: 'center' }}>
+          <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', fontFamily: 'Montserrat', minWidth: 200, textAlign: 'center' }}>
             {useWeekNav ? weekLabel : `${MONTH_NAMES[month]} ${year}`}
           </p>
           <button
             onClick={useWeekNav ? nextWeek : nextMonth}
-            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}
+            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--text-sub)' }}
           >›</button>
           <button
             onClick={() => {
@@ -122,7 +122,7 @@ const CalendarPage: React.FC = () => {
               setMonth(today.getMonth());
               setWeekStart(getWeekStart(today));
             }}
-            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: '#6B7280' }}
+            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-card)', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: 'var(--text-sub)' }}
           >
             Aujourd'hui
           </button>
@@ -130,9 +130,9 @@ const CalendarPage: React.FC = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {/* Projets / Interventions */}
-          <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
             {(['projets', 'interventions'] as const).map(ct => (
-              <button key={ct} onClick={() => setContentType(ct)} style={{ ...btnBase, padding: '6px 16px', background: contentType === ct ? '#1A1D2E' : '#fff', color: contentType === ct ? '#fff' : '#9CA3AF' }}>
+              <button key={ct} onClick={() => setContentType(ct)} style={{ ...btnBase, padding: '6px 16px', background: contentType === ct ? 'var(--text-primary)' : 'var(--bg-card)', color: contentType === ct ? 'var(--bg-card)' : 'var(--text-muted)' }}>
                 {ct === 'projets' ? 'Projets' : 'Interventions'}
               </button>
             ))}
@@ -141,17 +141,17 @@ const CalendarPage: React.FC = () => {
           {/* View mode (projets only) */}
           {contentType === 'projets' && (
             <>
-              <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
                 {(['month', 'gantt', 'list'] as const).map(v => (
-                  <button key={v} onClick={() => setViewMode(v)} style={{ ...btnBase, padding: '6px 14px', background: viewMode === v ? '#6366f1' : '#fff', color: viewMode === v ? '#fff' : '#9CA3AF' }}>
+                  <button key={v} onClick={() => setViewMode(v)} style={{ ...btnBase, padding: '6px 14px', background: viewMode === v ? 'var(--accent)' : 'var(--bg-card)', color: viewMode === v ? '#fff' : 'var(--text-muted)' }}>
                     {v === 'month' ? 'Mois' : v === 'gantt' ? 'Gantt' : 'Liste'}
                   </button>
                 ))}
               </div>
               {viewMode === 'list' && (
-                <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
                   {(['semaine', 'mois'] as const).map(m => (
-                    <button key={m} onClick={() => setListMode(m)} style={{ ...btnBase, padding: '6px 14px', background: listMode === m ? '#0f172a' : '#fff', color: listMode === m ? '#fff' : '#9CA3AF' }}>
+                    <button key={m} onClick={() => setListMode(m)} style={{ ...btnBase, padding: '6px 14px', background: listMode === m ? 'var(--text-primary)' : 'var(--bg-card)', color: listMode === m ? 'var(--bg-card)' : 'var(--text-muted)' }}>
                       {m === 'semaine' ? 'Semaine' : 'Mois'}
                     </button>
                   ))}
@@ -164,7 +164,7 @@ const CalendarPage: React.FC = () => {
 
       {/* ── User filter ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF' }}>Filtrer :</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>Filtrer :</span>
         <CalendarUserFilter users={allUsers} value={filterUser} onChange={setFilterUser} currentUserId={currentUser?.id} />
       </div>
 

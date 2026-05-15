@@ -48,7 +48,7 @@ const CalendarListView: React.FC<Props> = ({ tasks, projects, weekStart, year, m
 
   if (byProject.size === 0) {
     return (
-      <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #EEF0F6', padding: '64px 24px', textAlign: 'center', color: '#C4C9D4', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 16px rgba(0,0,0,0.04)' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 20, border: '1px solid var(--border-color)', padding: '64px 24px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 16px rgba(0,0,0,0.04)' }}>
         {emptyLabel}
       </div>
     );
@@ -73,54 +73,54 @@ const CalendarListView: React.FC<Props> = ({ tasks, projects, weekStart, year, m
         });
 
         return (
-          <div key={projectId} style={{ background: '#fff', borderRadius: 20, border: '1px solid #EEF0F6', overflow: 'hidden', boxShadow: '0 2px 20px rgba(0,0,0,0.05)' }}>
+          <div key={projectId} style={{ background: 'var(--bg-card)', borderRadius: 20, border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 2px 20px rgba(0,0,0,0.05)' }}>
 
             {/* ── Project header ── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', background: '#F8FAFC', borderBottom: '2px solid #EEF0F6' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 24px', background: 'var(--bg-input)', borderBottom: '2px solid var(--border-color)' }}>
               <div style={{ flexShrink: 0 }}>
                 {project?.logo
                   ? (project.logo.startsWith('http') || project.logo.startsWith('data:')
                       ? <img src={project.logo} style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover' }} alt="" />
                       : <span style={{ fontSize: 24 }}>{project.logo}</span>)
-                  : <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: '#6366f1' }}>
+                  : <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: 'var(--accent)' }}>
                       {(project?.nom || 'P')[0]}
                     </div>
                 }
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#1A1D2E', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 900, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   {project?.nom || 'Projet inconnu'}
                 </p>
               </div>
-              <span style={{ padding: '4px 12px', borderRadius: 99, background: '#EEF2FF', color: '#6366f1', fontSize: 11, fontWeight: 800 }}>
+              <span style={{ padding: '4px 12px', borderRadius: 99, background: 'var(--accent-soft)', color: 'var(--accent)', fontSize: 11, fontWeight: 800 }}>
                 {projectTasks.length} tâche{projectTasks.length > 1 ? 's' : ''}
               </span>
             </div>
 
             {/* ── User groups ── */}
             {groups.map((group, gi) => (
-              <div key={group.user?.id || '__none__'} style={{ borderTop: gi > 0 ? '1px solid #F1F5F9' : 'none' }}>
+              <div key={group.user?.id || '__none__'} style={{ borderTop: gi > 0 ? '1px solid var(--border-subtle)' : 'none' }}>
 
                 {/* User header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: '#FCFCFD' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: 'var(--bg-elevated)' }}>
                   {group.user
                     ? <CalendarAvatar user={group.user} size={32} />
-                    : <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px dashed #E2E8F0' }}>
-                        <span style={{ fontSize: 14, color: '#CBD5E1' }}>?</span>
+                    : <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--bg-icon)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '2px dashed var(--border-color)' }}>
+                        <span style={{ fontSize: 14, color: 'var(--text-faint)' }}>?</span>
                       </div>
                   }
                   <div>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#374151' }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: 'var(--text-sub)' }}>
                       {group.user ? `@${group.user.username}` : 'Non assigné'}
                     </p>
-                    <p style={{ margin: 0, fontSize: 10, color: '#9CA3AF', fontWeight: 600 }}>
+                    <p style={{ margin: 0, fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
                       {group.tasks.length} tâche{group.tasks.length > 1 ? 's' : ''}
                     </p>
                   </div>
                 </div>
 
                 {/* Task rows */}
-                <div style={{ borderTop: '1px solid #F8FAFC' }}>
+                <div style={{ borderTop: '1px solid var(--border-subtle)' }}>
                   {group.tasks.map((task, idx) => {
                     const status = STATUS_STYLES[task.statut] || STATUS_STYLES.TODO;
                     const color  = PRIORITY_COLORS[task.priorite] || '#6366f1';
@@ -132,10 +132,10 @@ const CalendarListView: React.FC<Props> = ({ tasks, projects, weekStart, year, m
                         style={{
                           display: 'flex', alignItems: 'center', gap: 16,
                           padding: '14px 24px 14px 68px',
-                          borderBottom: isLast ? 'none' : '1px solid #F8FAFC',
+                          borderBottom: isLast ? 'none' : '1px solid var(--border-subtle)',
                           cursor: 'pointer', transition: 'background 0.12s',
                         }}
-                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F9FAFB'}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                       >
                         {/* Priority bar */}
@@ -143,14 +143,14 @@ const CalendarListView: React.FC<Props> = ({ tasks, projects, weekStart, year, m
 
                         {/* Title + progress */}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 700, color: '#1A1D2E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <p style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {task.titre}
                           </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ width: 80, height: 4, background: '#F1F5F9', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{ width: 80, height: 4, background: 'var(--bg-hover)', borderRadius: 99, overflow: 'hidden' }}>
                               <div style={{ height: '100%', width: `${task.progression}%`, background: task.progression >= 100 ? '#22c55e' : color, borderRadius: 99 }} />
                             </div>
-                            <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'monospace', color: '#9CA3AF' }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'monospace', color: 'var(--text-muted)' }}>
                               {Math.round(task.progression)}%
                             </span>
                           </div>
@@ -158,19 +158,19 @@ const CalendarListView: React.FC<Props> = ({ tasks, projects, weekStart, year, m
 
                         {/* Dates */}
                         {(task.dateDebut || task.dateFin) && (
-                          <div style={{ fontSize: 12, color: '#6B7280', textAlign: 'right', flexShrink: 0, lineHeight: 1.7 }}>
+                          <div style={{ fontSize: 12, color: 'var(--text-sub)', textAlign: 'right', flexShrink: 0, lineHeight: 1.7 }}>
                             {task.dateDebut && (
-                              <div><span style={{ fontWeight: 700, color: '#9CA3AF' }}>Début </span>{fmtDate(task.dateDebut)}</div>
+                              <div><span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Début </span>{fmtDate(task.dateDebut)}</div>
                             )}
                             {task.dateFin && (
-                              <div><span style={{ fontWeight: 700, color: '#9CA3AF' }}>Fin </span>{fmtDate(task.dateFin)}</div>
+                              <div><span style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Fin </span>{fmtDate(task.dateFin)}</div>
                             )}
                           </div>
                         )}
 
                         {/* Blocage */}
                         {task.blocage && (
-                          <span style={{ padding: '4px 10px', borderRadius: 8, background: '#FEF2F2', color: '#DC2626', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>
+                          <span style={{ padding: '4px 10px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', color: '#EF4444', fontSize: 10, fontWeight: 800, flexShrink: 0 }}>
                             🔴 Blocage
                           </span>
                         )}

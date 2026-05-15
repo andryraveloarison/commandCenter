@@ -110,7 +110,7 @@ const ProjectsPage: React.FC = () => {
                     <span className="font-mono">{project.progressionGlobale.toFixed(0)}%</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden shadow-inner">
-                    <div className="bg-slate-900 h-full rounded-full" style={{ width: `${project.progressionGlobale}%` }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${project.progressionGlobale}%`, background: 'var(--accent)' }} />
                   </div>
                   <div className="pt-6 border-t border-slate-50 flex justify-between items-center">
                     <div className="space-y-0.5">

@@ -57,14 +57,14 @@ const DashboardInterventionsSection: React.FC<Props> = ({
     {/* Stat cards */}
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
       {[
-        { label: 'Total',       value: intervStats.total,     color: 'text-slate-900',   bg: '#F8FAFC', border: '#EEF0F6' },
-        { label: 'En attente',  value: intervStats.enAttente, color: 'text-yellow-600',  bg: '#FFFBEB', border: '#FDE68A' },
-        { label: 'En cours',    value: intervStats.enCours,   color: 'text-blue-700',    bg: '#EFF6FF', border: '#BFDBFE' },
-        { label: 'Résolues',    value: intervStats.resolu,    color: 'text-emerald-700', bg: '#F0FDF4', border: '#A7F3D0' },
+        { label: 'Total',      value: intervStats.total,     color: 'var(--text-primary)' },
+        { label: 'En attente', value: intervStats.enAttente, color: '#D97706' },
+        { label: 'En cours',   value: intervStats.enCours,   color: '#3B82F6' },
+        { label: 'Résolues',   value: intervStats.resolu,    color: '#16A34A' },
       ].map((s, i) => (
-        <div key={i} className="premium-card" style={{ background: s.bg, borderColor: s.border }}>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">{s.label}</p>
-          <p className={`text-5xl font-black ${s.color} font-mono tracking-tighter leading-none`}>
+        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '16px 20px' }}>
+          <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: 24 }}>{s.label}</p>
+          <p style={{ margin: 0, fontSize: 48, fontWeight: 900, color: s.color, fontFamily: 'monospace', letterSpacing: '-0.03em', lineHeight: 1 }}>
             {s.value.toString().padStart(2, '0')}
           </p>
         </div>
@@ -98,7 +98,7 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                     <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                <CartesianGrid stroke="var(--border-subtle)" vertical={false} />
                 <XAxis dataKey="label" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                 <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} allowDecimals={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} />
@@ -147,7 +147,7 @@ const DashboardInterventionsSection: React.FC<Props> = ({
             <div className="h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={intervByUser} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                  <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                  <CartesianGrid stroke="var(--border-subtle)" vertical={false} />
                   <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
@@ -257,9 +257,9 @@ const DashboardInterventionsSection: React.FC<Props> = ({
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #EEF0F6' }}>
+              <tr style={{ background: 'var(--bg-input)', borderBottom: '1px solid var(--border-color)' }}>
                 {['Date', 'Problème', 'Site', 'Demandeur', 'Intervenant', 'Statut'].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -267,26 +267,26 @@ const DashboardInterventionsSection: React.FC<Props> = ({
               {recentInterventions.map((iv: any, idx: number) => {
                 const sc = STATUS_INTERV[iv.statut as keyof typeof STATUS_INTERV];
                 return (
-                  <tr key={iv.id} style={{ borderBottom: idx < recentInterventions.length - 1 ? '1px solid #F5F7FA' : 'none' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFF')}
+                  <tr key={iv.id} style={{ borderBottom: idx < recentInterventions.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                    <td style={{ padding: '12px 16px', fontSize: 11, color: '#9CA3AF', whiteSpace: 'nowrap' }}>{fmtDate(iv.dateIntervention || iv.createdAt)}</td>
-                    <td style={{ padding: '12px 16px', fontSize: 12, color: '#374151', maxWidth: 220 }}>
+                    <td style={{ padding: '12px 16px', fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{fmtDate(iv.dateIntervention || iv.createdAt)}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-sub)', maxWidth: 220 }}>
                       <span style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{iv.probleme}</span>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>{iv.site?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
-                    <td style={{ padding: '12px 16px', fontSize: 12, color: '#374151' }}>{iv.demandeur?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{iv.site?.nom || <span style={{ color: 'var(--text-faint)' }}>—</span>}</td>
+                    <td style={{ padding: '12px 16px', fontSize: 12, color: 'var(--text-sub)' }}>{iv.demandeur?.nom || <span style={{ color: 'var(--text-faint)' }}>—</span>}</td>
                     <td style={{ padding: '12px 16px' }}>
                       {iv.intervenants?.length > 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                           <div style={{ display: 'flex' }}>
                             {iv.intervenants.slice(0, 3).map((ir: any, i: number) => (
-                              <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
+                              <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
                                 {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.username?.[0]?.toUpperCase()}
                               </div>
                             ))}
                             {iv.intervenants.length > 3 && (
-                              <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#EEF2FF', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#4F46E5', marginLeft: -10 }}>
+                              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--accent-soft)', border: '2px solid var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'var(--accent)', marginLeft: -10 }}>
                                 +{iv.intervenants.length - 3}
                               </div>
                             )}

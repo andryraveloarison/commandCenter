@@ -25,10 +25,10 @@ export const PRIO: Record<string, { label: string; color: string }> = {
 };
 
 export const STATUS_INTERV: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  EN_ATTENTE: { label: 'En attente', color: '#D97706', bg: '#FFFBEB', dot: '#F59E0B' },
-  EN_COURS:   { label: 'En cours',   color: '#1D4ED8', bg: '#DBEAFE', dot: '#3B82F6' },
-  RESOLU:     { label: 'Résolu',     color: '#065F46', bg: '#D1FAE5', dot: '#10B981' },
-  ANNULE:     { label: 'Annulé',     color: '#6B7280', bg: '#F3F4F6', dot: '#9CA3AF' },
+  EN_ATTENTE: { label: 'En attente', color: '#D97706', bg: 'rgba(217,119,6,0.12)',  dot: '#D97706' },
+  EN_COURS:   { label: 'En cours',   color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', dot: '#3B82F6' },
+  RESOLU:     { label: 'Résolu',     color: '#16A34A', bg: 'rgba(22,163,74,0.12)',  dot: '#16A34A' },
+  ANNULE:     { label: 'Annulé',     color: '#6B7280', bg: 'rgba(107,114,128,0.12)',dot: '#9CA3AF' },
 };
 
 export const TOOLTIP_STYLE = {

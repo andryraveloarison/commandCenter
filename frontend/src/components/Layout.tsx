@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@store/store';
 import { logout } from '@store/slices/authSlice';
+import { useTheme } from '@store/ThemeContext';
 import apiService from '@services/api';
 import { useRealtimeEvents } from '@hooks/useRealtimeEvents';
 import RealtimeNotification from '@components/RealtimeNotification';
@@ -162,16 +163,16 @@ const NotifPanel: React.FC<{ onClose: () => void; onRead: () => void }> = ({ onC
       <div style={{
         position: 'absolute', right: 0, top: 'calc(100% + 10px)',
         width: 340, maxHeight: 420,
-        background: '#fff', borderRadius: 16,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.05)',
-        border: '1px solid #EEF0F6',
+        background: 'var(--bg-elevated)', borderRadius: 16,
+        boxShadow: 'var(--shadow-md)',
+        border: '1px solid var(--border-color)',
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
         zIndex: 99,
       }}>
         {/* Header */}
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F7FA', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D2E' }}>Notifications</p>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>Notifications</p>
             {unreadCount > 0 && (
               <span style={{ padding: '1px 7px', borderRadius: 99, background: '#EF4444', color: '#fff', fontSize: 10, fontWeight: 700 }}>
                 {unreadCount}
@@ -198,25 +199,25 @@ const NotifPanel: React.FC<{ onClose: () => void; onRead: () => void }> = ({ onC
               onClick={() => !n.lu && markOne(n.id)}
               style={{
                 padding: '12px 16px',
-                background: n.lu ? '#fff' : '#F8F9FF',
-                borderBottom: '1px solid #F5F7FA',
+                background: n.lu ? 'var(--bg-elevated)' : 'var(--bg-active)',
+                borderBottom: '1px solid var(--border-subtle)',
                 cursor: n.lu ? 'default' : 'pointer',
                 display: 'flex', gap: 10, alignItems: 'flex-start',
                 transition: 'background 0.1s',
               }}
-              onMouseEnter={e => { if (!n.lu) (e.currentTarget as HTMLElement).style.background = '#EEF2FF'; }}
-              onMouseLeave={e => { if (!n.lu) (e.currentTarget as HTMLElement).style.background = '#F8F9FF'; }}
+              onMouseEnter={e => { if (!n.lu) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
+              onMouseLeave={e => { if (!n.lu) (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'; }}
             >
               <div style={{
-                width: 32, height: 32, borderRadius: 9, background: n.lu ? '#F3F4F6' : '#EEF2FF',
+                width: 32, height: 32, borderRadius: 9, background: n.lu ? 'var(--bg-icon)' : 'var(--bg-active)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0,
               }}>
                 {typeIcon[n.type] || typeIcon.DEFAULT}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12.5, fontWeight: n.lu ? 500 : 700, color: '#1A1D2E', lineHeight: 1.3 }}>{n.titre}</p>
-                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: '#6B7280', fontWeight: 400, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</p>
-                <p style={{ margin: '3px 0 0', fontSize: 10, color: '#C4C9D4', fontWeight: 500 }}>{formatRelative(n.createdAt)}</p>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: n.lu ? 500 : 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>{n.titre}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-sub)', fontWeight: 400, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</p>
+                <p style={{ margin: '3px 0 0', fontSize: 10, color: 'var(--text-faint)', fontWeight: 500 }}>{formatRelative(n.createdAt)}</p>
               </div>
               {!n.lu && (
                 <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4F46E5', flexShrink: 0, marginTop: 4 }} />
@@ -237,6 +238,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const auth = useSelector((state: RootState) => state.auth);
 
   useRealtimeEvents();
+
+  const { theme, toggle: toggleTheme } = useTheme();
 
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -312,18 +315,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '9px 12px', borderRadius: 10,
           textDecoration: 'none', fontWeight: 600, fontSize: 13.5,
-          color: isActive ? ACCENT : '#6B7280',
-          background: isActive ? ACCENT_BG : 'transparent',
+          color: isActive ? ACCENT : 'var(--text-sub)',
+          background: isActive ? 'var(--bg-active)' : 'transparent',
           transition: 'all 0.15s ease',
           position: 'relative',
         }}
-        onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+        onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
         onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
       >
         <span style={{
           width: 30, height: 30, borderRadius: 8, flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: isActive ? '#E0E7FF' : '#F3F4F6',
+          background: isActive ? '#E0E7FF' : 'var(--bg-icon)',
           position: 'relative',
         }}>
           {iconFn(isActive ? ACCENT : '#9CA3AF')}
@@ -345,8 +348,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     );
   };
 
+  const isDark = theme === 'dark';
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FA', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-app)', fontFamily: 'Inter, sans-serif' }}>
 
       <RealtimeNotification />
 
@@ -355,36 +360,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         position: 'fixed',
         top: 0, left: 0, right: 0,
         height: TOPBAR_H,
-        background: '#FFFFFF',
-        borderBottom: '1px solid #EEF0F6',
+        background: 'var(--bg-card)',
+        borderBottom: '1px solid var(--border-color)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 24px 0 20px',
         zIndex: 60,
         margin: '15px',
-        boxShadow: '0 1px 8px rgba(0,0,0,0.04)',
+        boxShadow: 'var(--shadow-sm)',
         borderRadius: 10,
       }}>
         {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: SIDEBAR_W - 20 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 9,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
+          <div style={{ width: 36, height: 36, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <img src="/logo.png" alt="Logo" style={{ height: 80, objectFit: 'contain', filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }} />
           </div>
           <div>
-            <p style={{ fontWeight: 800, fontSize: 14.5, color: '#1A1D2E', margin: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }}>Command</p>
-            <p style={{ fontSize: 10, color: '#B0B5CC', fontWeight: 500, margin: '2px 0 0' }}>Center</p>
+            <p style={{ fontWeight: 800, fontSize: 14.5, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }}>Command</p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, margin: '2px 0 0' }}>Center</p>
           </div>
         </div>
 
         {/* Page title */}
-        <h1 style={{
-          fontFamily: 'Montserrat, sans-serif',
-          fontWeight: 700, fontSize: 16,
-          color: '#1A1D2E', margin: 0, letterSpacing: '-0.02em',
-          flex: 1, paddingLeft: 16,
-        }}>
+        <h1 style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em', flex: 1, paddingLeft: 16 }}>
           {pageTitle}
         </h1>
 
@@ -392,30 +389,43 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
 
           {/* Status */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '5px 11px', background: '#F0FDF4', borderRadius: 99,
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', background: '#F0FDF4', borderRadius: 99 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', display: 'block' }} />
             <span style={{ fontSize: 11, fontWeight: 600, color: '#16A34A' }}>Opérationnel</span>
           </div>
+
+          {/* Dark mode toggle */}
+          <button
+            onClick={toggleTheme}
+            title={isDark ? 'Mode clair' : 'Mode sombre'}
+            style={{
+              width: 38, height: 38, borderRadius: 10,
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-hover)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'all 0.15s', fontSize: 16,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
+          >
+            {isDark ? '☀️' : '🌙'}
+          </button>
 
           {/* Bell – notifications */}
           <div ref={notifRef} style={{ position: 'relative' }}>
             <button
               onClick={() => { setShowNotifs(v => !v); if (!showNotifs) setUnreadNotifCount(0); }}
               style={{
-                position: 'relative',
-                width: 38, height: 38, borderRadius: 10,
-                border: showNotifs ? `1.5px solid ${ACCENT}` : '1px solid #EEF0F6',
-                background: showNotifs ? ACCENT_BG : '#FAFAFA',
+                position: 'relative', width: 38, height: 38, borderRadius: 10,
+                border: showNotifs ? `1.5px solid ${ACCENT}` : '1px solid var(--border-color)',
+                background: showNotifs ? ACCENT_BG : 'var(--bg-hover)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { if (!showNotifs) (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-              onMouseLeave={e => { if (!showNotifs) (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; }}
+              onMouseEnter={e => { if (!showNotifs) (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'; }}
+              onMouseLeave={e => { if (!showNotifs) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
             >
-              {Icon.bell(showNotifs ? ACCENT : '#9CA3AF')}
+              {Icon.bell(showNotifs ? ACCENT : 'var(--text-muted)')}
               {unreadNotifCount > 0 && (
                 <span style={{
                   position: 'absolute', top: -5, right: -5,
@@ -423,7 +433,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   background: '#EF4444', color: '#fff',
                   fontSize: 10, fontWeight: 700,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  padding: '0 4px', border: '2px solid #fff',
+                  padding: '0 4px', border: '2px solid var(--bg-card)',
                 }}>
                   {unreadNotifCount > 99 ? '99+' : unreadNotifCount}
                 </span>
@@ -446,30 +456,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={() => setShowMenu(v => !v)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 9,
-                padding: '5px 12px 5px 5px',
-                borderRadius: 99,
-                border: showMenu ? `1.5px solid ${ACCENT}` : '1px solid #EEF0F6',
-                background: showMenu ? ACCENT_BG : '#FAFAFA',
+                padding: '5px 12px 5px 5px', borderRadius: 99,
+                border: showMenu ? `1.5px solid ${ACCENT}` : '1px solid var(--border-color)',
+                background: showMenu ? ACCENT_BG : 'var(--bg-hover)',
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { if (!showMenu) (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
-              onMouseLeave={e => { if (!showMenu) (e.currentTarget as HTMLElement).style.background = '#FAFAFA'; }}
+              onMouseEnter={e => { if (!showMenu) (e.currentTarget as HTMLElement).style.background = 'var(--bg-active)'; }}
+              onMouseLeave={e => { if (!showMenu) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
             >
-              <div style={{
-                width: 30, height: 30, borderRadius: '50%',
-                background: '#1A1D2E',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                overflow: 'hidden', flexShrink: 0,
-              }}>
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                 {auth.user?.photo
                   ? <img src={auth.user.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ color: '#fff', fontWeight: 800, fontSize: 12 }}>{userInitial}</span>
+                  : <span style={{ color: isDark ? '#1A1D2E' : '#fff', fontWeight: 800, fontSize: 12 }}>{userInitial}</span>
                 }
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#1A1D2E' }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
                 {auth.user?.username ?? auth.user?.nom?.split(' ')[0] ?? 'Utilisateur'}
               </span>
-              <svg width={12} height={12} fill="none" stroke="#B0B5CC" strokeWidth={2} viewBox="0 0 24 24"
+              <svg width={12} height={12} fill="none" stroke="var(--text-muted)" strokeWidth={2} viewBox="0 0 24 24"
                 style={{ transition: 'transform 0.2s', transform: showMenu ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                 <polyline points="6 9 12 15 18 9" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -479,19 +483,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             {showMenu && (
               <div style={{
                 position: 'absolute', right: 0, top: 'calc(100% + 10px)',
-                width: 200,
-                background: '#FFFFFF',
-                borderRadius: 14,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.05)',
-                border: '1px solid #EEF0F6',
-                overflow: 'hidden',
-                zIndex: 100,
+                width: 200, background: 'var(--bg-elevated)', borderRadius: 14,
+                boxShadow: 'var(--shadow-md)',
+                border: '1px solid var(--border-color)',
+                overflow: 'hidden', zIndex: 100,
               }}>
-                <div style={{ padding: '13px 16px', borderBottom: '1px solid #F5F7FA' }}>
-                  <p style={{ fontSize: 13.5, fontWeight: 700, color: '#1A1D2E', margin: 0, lineHeight: 1.2 }}>
+                <div style={{ padding: '13px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <p style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
                     {auth.user?.username ?? auth.user?.nom}
                   </p>
-                  <p style={{ fontSize: 11, color: '#B0B5CC', margin: '3px 0 0', fontWeight: 500 }}>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '3px 0 0', fontWeight: 500 }}>
                     {auth.user?.role} · {auth.user?.email}
                   </p>
                 </div>
@@ -499,30 +500,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <Link
                   to="/settings"
                   onClick={() => setShowMenu(false)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '11px 16px', textDecoration: 'none',
-                    color: '#374151', fontSize: 13, fontWeight: 500,
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', textDecoration: 'none', color: 'var(--text-sub)', fontSize: 13, fontWeight: 500 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
-                  <span style={{ width: 26, height: 26, borderRadius: 7, background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {Icon.userIcon('#6B7280')}
+                  <span style={{ width: 26, height: 26, borderRadius: 7, background: 'var(--bg-icon)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {Icon.userIcon('var(--text-sub)')}
                   </span>
                   Modifier le profil
                 </Link>
 
-                <div style={{ height: 1, background: '#F5F7FA' }} />
+                <div style={{ height: 1, background: 'var(--border-subtle)' }} />
 
                 <button
                   onClick={handleLogout}
-                  style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '11px 16px', border: 'none', background: 'transparent',
-                    color: '#EF4444', fontSize: 13, fontWeight: 500,
-                    cursor: 'pointer', textAlign: 'left', marginBottom: 3,
-                  }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', border: 'none', background: 'transparent', color: '#EF4444', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left', marginBottom: 3 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FEF2F2'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
@@ -539,36 +531,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* ═══════════ SIDEBAR ═════════════════════════════════════════════ */}
       <aside style={{
-        position: 'fixed',
-        top: TOPBAR_H, left: 0, bottom: 0,
-        width: SIDEBAR_W,
-        background: '#FFFFFF',
-        borderRight: '1px solid #EEF0F6',
+        position: 'fixed', top: TOPBAR_H, left: 0, bottom: 0, width: SIDEBAR_W,
+        background: 'var(--bg-sidebar)',
+        borderRight: '1px solid var(--border-color)',
         display: 'flex', flexDirection: 'column',
         padding: '18px 12px',
         margin: '30px 15px 15px 15px',
-        zIndex: 50,
-        borderRadius: 10,
-        overflowY: 'auto',
+        zIndex: 50, borderRadius: 10, overflowY: 'auto',
       }}>
         {/* Main nav */}
         <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {mainNav.map(item => (
-            <NavLink
-              key={item.path}
-              {...item}
-              badge={item.path === '/messages' ? unreadMsgCount : undefined}
-            />
+            <NavLink key={item.path} {...item} badge={item.path === '/messages' ? unreadMsgCount : undefined} />
           ))}
         </nav>
 
         {/* Help section */}
         <div style={{ marginTop: 24 }}>
-          <p style={{
-            fontSize: 10, fontWeight: 700, color: '#C4C9D4',
-            textTransform: 'uppercase', letterSpacing: '0.1em',
-            padding: '0 12px 8px', margin: 0,
-          }}>Aide</p>
+          <p style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 12px 8px', margin: 0 }}>Aide</p>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {helpNav.map(item => <NavLink key={item.path} {...item} />)}
           </nav>
@@ -576,26 +556,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Bottom widget */}
         <div style={{ marginTop: 'auto', paddingTop: 20 }}>
-          <div style={{
-            borderRadius: 14,
-            background: 'linear-gradient(135deg, #003f69ff 0%, #5cacf6ff 100%)',
-            padding: '15px 14px', position: 'relative', overflow: 'hidden',
-          }}>
-            <div style={{
-              position: 'absolute', right: -14, bottom: -14,
-              width: 70, height: 70, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.1)',
-            }} />
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 9, fontSize: 14,
-            }}>🔔</div>
+          <div style={{ borderRadius: 14, background: 'linear-gradient(135deg, #003f69ff 0%, #5cacf6ff 100%)', padding: '15px 14px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: -14, bottom: -14, width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 9, fontSize: 14 }}>🔔</div>
             <p style={{ color: '#fff', fontWeight: 700, fontSize: 12, margin: '0 0 3px' }}>Système actif</p>
-            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 500, margin: 0, lineHeight: 1.5 }}>
-              Toutes les opérations sont en ligne
-            </p>
+            <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 10, fontWeight: 500, margin: 0, lineHeight: 1.5 }}>Toutes les opérations sont en ligne</p>
           </div>
         </div>
       </aside>

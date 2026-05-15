@@ -18,10 +18,10 @@ interface Intervention {
 
 /* ── Helpers ────────────────────────────────────────────────────────────── */
 const STATUS_CFG = {
-  EN_ATTENTE: { label: 'En attente', bg: '#FEF3C7', color: '#D97706', dot: '#F59E0B' },
-  EN_COURS:   { label: 'En cours',   bg: '#DBEAFE', color: '#1D4ED8', dot: '#3B82F6' },
-  RESOLU:     { label: 'Résolu',     bg: '#D1FAE5', color: '#065F46', dot: '#10B981' },
-  ANNULE:     { label: 'Annulé',     bg: '#F3F4F6', color: '#6B7280', dot: '#9CA3AF' },
+  EN_ATTENTE: { label: 'En attente', bg: 'rgba(217,119,6,0.12)',  color: '#D97706', dot: '#D97706' },
+  EN_COURS:   { label: 'En cours',   bg: 'rgba(59,130,246,0.12)', color: '#3B82F6', dot: '#3B82F6' },
+  RESOLU:     { label: 'Résolu',     bg: 'rgba(22,163,74,0.12)',  color: '#16A34A', dot: '#16A34A' },
+  ANNULE:     { label: 'Annulé',     bg: 'rgba(107,114,128,0.12)',color: '#6B7280', dot: '#9CA3AF' },
 };
 
 const StatusBadge = ({ s }: { s: keyof typeof STATUS_CFG }) => {
@@ -72,7 +72,7 @@ const QuickAdd: React.FC<{
         )}
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={save} style={{ flex: 1, padding: '8px', background: '#4F46E5', color: '#fff', borderRadius: 9, border: 'none', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>Créer</button>
-          <button onClick={onCancel} style={{ padding: '8px 14px', background: '#F3F4F6', color: '#6B7280', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>✕</button>
+          <button onClick={onCancel} style={{ padding: '8px 14px', background: 'var(--bg-icon)', color: 'var(--text-sub)', borderRadius: 9, border: 'none', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>✕</button>
         </div>
       </div>
     </div>
@@ -90,21 +90,21 @@ const IntervenantsPicker: React.FC<{
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', border: '1px solid #EEF0F6', borderRadius: 12, padding: 8 }}>
-      {users.length === 0 && <p style={{ fontSize: 12, color: '#C4C9D4', margin: 0, padding: 4 }}>Aucun utilisateur</p>}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: 12, padding: 8 }}>
+      {users.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-faint)', margin: 0, padding: 4 }}>Aucun utilisateur</p>}
       {users.map(u => {
         const isChecked = selected.includes(u.id);
         return (
           <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: isChecked ? '#EEF2FF' : 'transparent', transition: 'background 0.1s' }}>
-            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isChecked ? '#4F46E5' : '#D1D5DB'}`, background: isChecked ? '#4F46E5' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, color: '#fff', fontWeight: 900 }}>
+            <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${isChecked ? '#4F46E5' : 'var(--text-faint)'}`, background: isChecked ? '#4F46E5' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, color: '#fff', fontWeight: 900 }}>
               {isChecked && '✓'}
             </div>
             <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#4F46E5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
               {u.photo ? <img src={u.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : u.username[0].toUpperCase()}
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>@{u.username}</p>
-              <p style={{ margin: 0, fontSize: 10, color: '#9CA3AF' }}>{u.role}</p>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>@{u.username}</p>
+              <p style={{ margin: 0, fontSize: 10, color: 'var(--text-muted)' }}>{u.role}</p>
             </div>
             <input type="checkbox" checked={isChecked} onChange={() => toggle(u.id)} style={{ display: 'none' }} />
           </label>
@@ -156,17 +156,17 @@ const Modal: React.FC<{
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.35)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 20, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid #F0F2F8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ margin: 0, fontWeight: 800, fontSize: 17, color: '#1A1D2E' }}>{item ? 'Modifier l\'intervention' : 'Nouvelle intervention'}</h2>
-            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#B0B5CC' }}>Remplissez les informations de l'intervention</p>
+            <h2 style={{ margin: 0, fontWeight: 800, fontSize: 17, color: 'var(--text-primary)' }}>{item ? 'Modifier l\'intervention' : 'Nouvelle intervention'}</h2>
+            <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>Remplissez les informations de l'intervention</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <SpellCheckButton checking={checking} corrected={corrected} disabled={!f.probleme && !f.solution} onClick={handleCorrect} />
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9, border: '1px solid #EEF0F6', background: '#F9FAFB', cursor: 'pointer', fontSize: 16, color: '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9, border: '1px solid var(--border-color)', background: 'var(--bg-hover)', cursor: 'pointer', fontSize: 16, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
           </div>
         </div>
 
@@ -250,9 +250,9 @@ const Modal: React.FC<{
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid #F0F2F8', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: 11, border: '1px solid #EEF0F6', background: '#F9FAFB', color: '#6B7280', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
-          <button onClick={save} disabled={saving || !f.probleme.trim()} style={{ padding: '10px 24px', borderRadius: 11, border: 'none', background: f.probleme.trim() ? '#4F46E5' : '#EEF2FF', color: f.probleme.trim() ? '#fff' : '#A5B4FC', fontWeight: 700, fontSize: 13, cursor: f.probleme.trim() ? 'pointer' : 'default', minWidth: 120 }}>
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '10px 20px', borderRadius: 11, border: '1px solid var(--border-color)', background: 'var(--bg-hover)', color: 'var(--text-sub)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>Annuler</button>
+          <button onClick={save} disabled={saving || !f.probleme.trim()} style={{ padding: '10px 24px', borderRadius: 11, border: 'none', background: f.probleme.trim() ? '#4F46E5' : '#EEF2FF', color: f.probleme.trim() ? 'var(--bg-card)' : '#A5B4FC', fontWeight: 700, fontSize: 13, cursor: f.probleme.trim() ? 'pointer' : 'default', minWidth: 120 }}>
             {saving ? 'Enregistrement…' : item ? 'Modifier' : 'Créer'}
           </button>
         </div>
@@ -341,13 +341,13 @@ const InterventionsPage: React.FC = () => {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
         {[
-          { label: 'Total', value: stats.total, bg: '#F8FAFC', color: '#1A1D2E', border: '#EEF0F6' },
-          { label: 'En attente', value: stats.enAttente, bg: '#FFFBEB', color: '#D97706', border: '#FDE68A' },
-          { label: 'En cours', value: stats.enCours, bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-          { label: 'Résolues', value: stats.resolu, bg: '#F0FDF4', color: '#065F46', border: '#A7F3D0' },
+          { label: 'Total',      value: stats.total,     color: 'var(--text-primary)' },
+          { label: 'En attente', value: stats.enAttente, color: '#D97706' },
+          { label: 'En cours',   value: stats.enCours,   color: '#3B82F6' },
+          { label: 'Résolues',   value: stats.resolu,    color: '#16A34A' },
         ].map(s => (
-          <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 14, padding: '16px 20px' }}>
-            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{s.label}</p>
+          <div key={s.label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '16px 20px' }}>
+            <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{s.label}</p>
             <p style={{ margin: '6px 0 0', fontSize: 28, fontWeight: 900, color: s.color, fontFamily: 'Montserrat, sans-serif' }}>{s.value}</p>
           </div>
         ))}
@@ -358,7 +358,7 @@ const InterventionsPage: React.FC = () => {
         <input
           value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Rechercher…"
-          style={{ flex: 1, minWidth: 180, padding: '9px 14px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none' }}
+          style={{ flex: 1, minWidth: 180, padding: '9px 14px', borderRadius: 10, border: '1.5px solid var(--border-color)', background: 'var(--bg-input)', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none' }}
           onFocus={e => (e.target.style.borderColor = '#4F46E5')}
           onBlur={e => (e.target.style.borderColor = '#EEF0F6')}
         />
@@ -366,7 +366,7 @@ const InterventionsPage: React.FC = () => {
         <select
           value={period}
           onChange={e => setPeriod(e.target.value as PeriodF)}
-          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#374151', cursor: 'pointer', outline: 'none' }}
+          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--border-color)', background: 'var(--bg-input)', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--text-sub)', cursor: 'pointer', outline: 'none' }}
         >
           {PERIOD_OPTS.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -376,7 +376,7 @@ const InterventionsPage: React.FC = () => {
         <select
           value={filter}
           onChange={e => setFilter(e.target.value as typeof FILTERS[number])}
-          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: '#374151', cursor: 'pointer', outline: 'none' }}
+          style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--border-color)', background: 'var(--bg-input)', fontSize: 13, fontFamily: 'Inter, sans-serif', fontWeight: 600, color: 'var(--text-sub)', cursor: 'pointer', outline: 'none' }}
         >
           {FILTERS.map(f => (
             <option key={f} value={f}>{f === 'Tous' ? 'Tous les statuts' : STATUS_CFG[f as keyof typeof STATUS_CFG].label}</option>
@@ -388,35 +388,35 @@ const InterventionsPage: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #EEF0F6', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #EEF0F6' }}>
+            <tr style={{ background: 'var(--bg-input)', borderBottom: '1px solid var(--border-color)' }}>
               {['Date', 'Site', 'Demandeur', 'Problème', 'Intervenant', 'Statut', ''].map(h => (
-                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{h}</th>
+                <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#C4C9D4', fontSize: 13, fontWeight: 600 }}>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13, fontWeight: 600 }}>
                 {search || filter !== 'Tous' ? 'Aucun résultat' : 'Aucune intervention enregistrée'}
               </td></tr>
             )}
             {filtered.map((iv, idx) => (
-              <tr key={iv.id} style={{ borderBottom: idx < filtered.length - 1 ? '1px solid #F5F7FA' : 'none', transition: 'background 0.1s' }}
-                onMouseEnter={e => (e.currentTarget.style.background = '#FAFBFF')}
+              <tr key={iv.id} style={{ borderBottom: idx < filtered.length - 1 ? '1px solid var(--border-subtle)' : 'none', transition: 'background 0.1s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-app)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-                <td style={{ padding: '13px 16px', fontSize: 12, color: '#6B7280', whiteSpace: 'nowrap' }}>
-                  {iv.dateIntervention ? fmtDate(iv.dateIntervention) : <span style={{ color: '#D1D5DB' }}>{fmtDate(iv.createdAt)}</span>}
+                <td style={{ padding: '13px 16px', fontSize: 12, color: 'var(--text-sub)', whiteSpace: 'nowrap' }}>
+                  {iv.dateIntervention ? fmtDate(iv.dateIntervention) : <span style={{ color: 'var(--text-faint)' }}>{fmtDate(iv.createdAt)}</span>}
                 </td>
-                <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 600, color: '#1A1D2E', maxWidth: 120 }}>
-                  {iv.site?.nom || <span style={{ color: '#D1D5DB' }}>—</span>}
+                <td style={{ padding: '13px 16px', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', maxWidth: 120 }}>
+                  {iv.site?.nom || <span style={{ color: 'var(--text-faint)' }}>—</span>}
                 </td>
-                <td style={{ padding: '13px 16px', fontSize: 13, color: '#374151', maxWidth: 130 }}>
-                  {iv.demandeur ? iv.demandeur.nom : <span style={{ color: '#D1D5DB' }}>—</span>}
+                <td style={{ padding: '13px 16px', fontSize: 13, color: 'var(--text-sub)', maxWidth: 130 }}>
+                  {iv.demandeur ? iv.demandeur.nom : <span style={{ color: 'var(--text-faint)' }}>—</span>}
                 </td>
-                <td style={{ padding: '13px 16px', fontSize: 13, color: '#374151', maxWidth: 240 }}>
+                <td style={{ padding: '13px 16px', fontSize: 13, color: 'var(--text-sub)', maxWidth: 240 }}>
                   <span style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{iv.probleme}</span>
                 </td>
                 <td style={{ padding: '13px 16px' }}>
@@ -425,28 +425,28 @@ const InterventionsPage: React.FC = () => {
                       {/* Stacked avatars */}
                       <div style={{ display: 'flex' }}>
                         {iv.intervenants.slice(0, 4).map((ir, i) => (
-                          <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
+                          <div key={ir.user.id} title={`@${ir.user.username}`} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
                             {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.username[0].toUpperCase()}
                           </div>
                         ))}
                         {iv.intervenants.length > 4 && (
-                          <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#EEF2FF', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: '#4F46E5', marginLeft: -8 }}>
+                          <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent-soft)', border: '2px solid var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, color: 'var(--accent)', marginLeft: -8 }}>
                             +{iv.intervenants.length - 4}
                           </div>
                         )}
                       </div>
                       {iv.intervenants.length === 1 && (
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-sub)', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username}</span>
                       )}
                     </div>
-                  ) : <span style={{ color: '#D1D5DB', fontSize: 12 }}>—</span>}
+                  ) : <span style={{ color: 'var(--text-faint)', fontSize: 12 }}>—</span>}
                 </td>
                 <td style={{ padding: '13px 16px' }}><StatusBadge s={iv.statut} /></td>
                 <td style={{ padding: '13px 16px' }}>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button onClick={() => setModal(iv)} style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid #EEF0F6', background: '#F9FAFB', color: '#6B7280', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
+                    <button onClick={() => setModal(iv)} style={{ padding: '5px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-hover)', color: 'var(--text-sub)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#EEF2FF'; (e.currentTarget as HTMLElement).style.color = '#4F46E5'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#F9FAFB'; (e.currentTarget as HTMLElement).style.color = '#6B7280'; }}>
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-sub)'; }}>
                       Éditer
                     </button>
                     <button onClick={() => { if (confirm('Supprimer cette intervention ?')) deleteMut.mutate(iv.id); }}

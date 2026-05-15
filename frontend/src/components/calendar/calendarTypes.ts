@@ -33,25 +33,25 @@ export const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
-  TODO:      { bg: '#F1F5F9', text: '#64748B' },
-  EN_COURS:  { bg: '#EEF2FF', text: '#1f1a77ff' },
-  EN_REVIEW: { bg: '#FAF5FF', text: '#431c85ff' },
-  COMPLETEE: { bg: '#F0FDF4', text: '#126430ff' },
-  BLOQUEE:   { bg: '#FEF2F2', text: '#6e1414ff' },
+  TODO:      { bg: 'rgba(107,114,128,0.12)', text: '#6B7280' },
+  EN_COURS:  { bg: 'rgba(99,102,241,0.12)',  text: '#6366f1' },
+  EN_REVIEW: { bg: 'rgba(139,92,246,0.12)',  text: '#8B5CF6' },
+  COMPLETEE: { bg: 'rgba(34,197,94,0.12)',   text: '#16A34A' },
+  BLOQUEE:   { bg: 'rgba(239,68,68,0.12)',   text: '#EF4444' },
 };
 
 export const INTERVENTION_STATUS: Record<string, { bg: string; color: string; label: string }> = {
-  EN_ATTENTE: { bg: '#FEF3C7', color: '#D97706', label: 'En attente' },
-  EN_COURS:   { bg: '#DBEAFE', color: '#1D4ED8', label: 'En cours' },
-  RESOLU:     { bg: '#D1FAE5', color: '#065F46', label: 'Résolu' },
-  ANNULE:     { bg: '#F3F4F6', color: '#6B7280', label: 'Annulé' },
+  EN_ATTENTE: { bg: 'rgba(217,119,6,0.12)',  color: '#D97706', label: 'En attente' },
+  EN_COURS:   { bg: 'rgba(59,130,246,0.12)', color: '#3B82F6', label: 'En cours' },
+  RESOLU:     { bg: 'rgba(22,163,74,0.12)',  color: '#16A34A', label: 'Résolu' },
+  ANNULE:     { bg: 'rgba(107,114,128,0.12)',color: '#6B7280', label: 'Annulé' },
 };
 
 export const getProgressionColor = (prog: number): string => {
   if (prog >= 100) return '#22c55e';
   if (prog >= 66)  return '#6366f1';
   if (prog >= 33)  return '#f97316';
-  return '#1A1D2E';
+  return '#6B7280';
 };
 
 export const fmtFull = (iso: string) =>

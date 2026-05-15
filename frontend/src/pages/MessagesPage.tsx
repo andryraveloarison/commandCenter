@@ -59,7 +59,7 @@ const ReadReceipts: React.FC<{ users: UserBrief[]; align: 'left'|'right' }> = ({
       {users.slice(0, 5).map((u, i) => (
         <div key={u.id} title={`Lu par ${u.username ?? u.nom}`} style={{ marginLeft: i ? -8 : 0 }}><Av user={u} size={22} /></div>
       ))}
-      {users.length > 5 && <span style={{ fontSize: 9, color: '#9CA3AF', fontWeight: 600, marginLeft: 2 }}>+{users.length - 5}</span>}
+      {users.length > 5 && <span style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, marginLeft: 2 }}>+{users.length - 5}</span>}
     </div>
   );
 };
@@ -70,26 +70,26 @@ const UserPicker: React.FC<{ users: UserBrief[]; onSelect: (u: UserBrief) => voi
   const filtered = users.filter(u => (u.username ?? u.nom).toLowerCase().includes(q.toLowerCase()));
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-      <div style={{ background: '#fff', borderRadius: 18, width: 360, boxShadow: '0 16px 48px rgba(0,0,0,0.18)', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: 'var(--bg-card)', borderRadius: 18, width: 360, boxShadow: '0 16px 48px rgba(0,0,0,0.18)', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: '18px 18px 12px' }}>
-          <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 15, color: '#1A1D2E' }}>Nouvelle conversation</p>
+          <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Nouvelle conversation</p>
           <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un membre…"
-            style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1.5px solid #EEF0F6', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--border-color)', fontSize: 13, fontFamily: 'Inter, sans-serif', outline: 'none', boxSizing: 'border-box' }}
             onFocus={e => (e.target.style.borderColor = '#4F46E5')} onBlur={e => (e.target.style.borderColor = '#EEF0F6')}
           />
         </div>
         <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-          {filtered.length === 0 && <p style={{ textAlign: 'center', color: '#C4C9D4', fontSize: 12, padding: '20px 0' }}>Aucun résultat</p>}
+          {filtered.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-faint)', fontSize: 12, padding: '20px 0' }}>Aucun résultat</p>}
           {filtered.map(u => (
             <div key={u.id} onClick={() => onSelect(u)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', cursor: 'pointer' }}
               onMouseEnter={e => (e.currentTarget.style.background = '#F5F7FF')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
               <Av user={u} size={34} />
-              <span style={{ fontWeight: 600, fontSize: 13.5, color: '#1A1D2E' }}>{u.username ?? u.nom}</span>
+              <span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--text-primary)' }}>{u.username ?? u.nom}</span>
             </div>
           ))}
         </div>
-        <div style={{ padding: '10px 18px', borderTop: '1px solid #F5F7FA' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 12, color: '#9CA3AF', cursor: 'pointer' }}>Annuler</button>
+        <div style={{ padding: '10px 18px', borderTop: '1px solid var(--border-subtle)' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer' }}>Annuler</button>
         </div>
       </div>
     </div>
@@ -366,38 +366,38 @@ const MessagesPage: React.FC = () => {
         </div>
       )}
 
-      <div style={{ display: 'flex', height: 'calc(100vh - 108px)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.06)', border: '1px solid #EEF0F6' }}>
+      <div style={{ display: 'flex', height: 'calc(100vh - 108px)', borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.06)', border: '1px solid var(--border-color)' }}>
 
         {/* ── Left sidebar ── */}
-        <div style={{ width: 230, background: '#FAFBFF', borderRight: '1px solid #EEF0F6', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+        <div style={{ width: 230, background: 'var(--bg-app)', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
           <div style={{ padding: '14px 10px 8px' }}>
-            <p style={{ margin: '0 0 6px 6px', fontSize: 10, fontWeight: 700, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Canaux</p>
+            <p style={{ margin: '0 0 6px 6px', fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Canaux</p>
             <div onClick={() => setView('group')}
               style={{ padding: '9px 10px', borderRadius: 10, cursor: 'pointer', background: view === 'group' ? '#EEF2FF' : 'transparent', display: 'flex', alignItems: 'center', gap: 9, transition: 'background 0.12s' }}
-              onMouseEnter={e => { if (view !== 'group') (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+              onMouseEnter={e => { if (view !== 'group') (e.currentTarget as HTMLElement).style.background = 'var(--bg-icon)'; }}
               onMouseLeave={e => { if (view !== 'group') (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
               <div style={{ width: 32, height: 32, borderRadius: 9, background: view === 'group' ? '#4F46E5' : '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>💬</div>
               <div style={{ overflow: 'hidden' }}>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: 12.5, color: view === 'group' ? '#4F46E5' : '#374151', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Chat d'équipe</p>
-                <p style={{ margin: 0, fontSize: 10, color: view === 'group' ? '#818CF8' : '#9CA3AF' }}>Canal global</p>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 12.5, color: view === 'group' ? '#4F46E5' : 'var(--text-sub)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Chat d'équipe</p>
+                <p style={{ margin: 0, fontSize: 10, color: view === 'group' ? '#818CF8' : 'var(--text-muted)' }}>Canal global</p>
               </div>
             </div>
           </div>
 
           <div style={{ padding: '4px 10px 6px', flex: 1, overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '4px 0 6px 6px' }}>
-              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Messages privés</p>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Messages privés</p>
               <button onClick={() => setShowPicker(true)} title="Nouvelle conversation"
-                style={{ width: 20, height: 20, borderRadius: 6, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#6B7280' }}>+</button>
+                style={{ width: 20, height: 20, borderRadius: 6, border: '1px solid #E5E7EB', background: 'var(--bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: 'var(--text-sub)' }}>+</button>
             </div>
-            {conversations.length === 0 && <p style={{ fontSize: 11, color: '#D1D5DB', textAlign: 'center', marginTop: 12 }}>Aucune conversation</p>}
+            {conversations.length === 0 && <p style={{ fontSize: 11, color: 'var(--text-faint)', textAlign: 'center', marginTop: 12 }}>Aucune conversation</p>}
             {conversations.map(conv => {
               const isActive = view === conv.partner.id;
               return (
                 <div key={conv.partner.id} onClick={() => setView(conv.partner.id)}
                   style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', background: isActive ? '#EEF2FF' : 'transparent', transition: 'background 0.12s', position: 'relative' }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = '#F3F4F6'; }}
+                  onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'var(--bg-icon)'; }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -407,9 +407,9 @@ const MessagesPage: React.FC = () => {
                     )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 12.5, fontWeight: conv.unread > 0 ? 700 : 600, color: isActive ? '#4F46E5' : '#1A1D2E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.partner.username ?? conv.partner.nom}</p>
+                    <p style={{ margin: 0, fontSize: 12.5, fontWeight: conv.unread > 0 ? 700 : 600, color: isActive ? '#4F46E5' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{conv.partner.username ?? conv.partner.nom}</p>
                     {conv.lastMessage.contenu && (
-                      <p style={{ margin: 0, fontSize: 10.5, color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: conv.unread > 0 ? 600 : 400 }}>
+                      <p style={{ margin: 0, fontSize: 10.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: conv.unread > 0 ? 600 : 400 }}>
                         {conv.lastMessage.senderId === me?.id ? 'Vous : ' : ''}{conv.lastMessage.contenu}
                       </p>
                     )}
@@ -419,31 +419,31 @@ const MessagesPage: React.FC = () => {
             })}
           </div>
 
-          <div style={{ padding: '10px 14px', borderTop: '1px solid #EEF0F6', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22C55E', display: 'block' }} />
-            <span style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>{onlineCount} en ligne</span>
+            <span style={{ fontSize: 11, color: 'var(--text-sub)', fontWeight: 500 }}>{onlineCount} en ligne</span>
           </div>
         </div>
 
         {/* ── Right panel ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#fff', minWidth: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-card)', minWidth: 0 }}>
 
           {/* Header */}
-          <div style={{ padding: '13px 20px', borderBottom: '1px solid #F0F2F8', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+          <div style={{ padding: '13px 20px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {view === 'group' ? (
               <>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>💬</div>
                 <div>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#1A1D2E' }}>Chat d'équipe</p>
-                  <p style={{ margin: 0, fontSize: 11, color: '#B0B5CC', fontWeight: 500 }}>{messages.length} message{messages.length !== 1 ? 's' : ''} · Canal global</p>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Chat d'équipe</p>
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>{messages.length} message{messages.length !== 1 ? 's' : ''} · Canal global</p>
                 </div>
               </>
             ) : activePartner ? (
               <>
                 <Av user={activePartner} size={38} style={{ borderRadius: 10 }} />
                 <div>
-                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#1A1D2E' }}>{activePartner.username ?? activePartner.nom}</p>
-                  <p style={{ margin: 0, fontSize: 11, color: '#B0B5CC', fontWeight: 500 }}>Message privé</p>
+                  <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{activePartner.username ?? activePartner.nom}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>Message privé</p>
                 </div>
               </>
             ) : null}
@@ -459,13 +459,13 @@ const MessagesPage: React.FC = () => {
             )}
             {hasMore && !isLoadingMore && messages.length > 0 && (
               <div style={{ textAlign: 'center', padding: '4px 0 8px' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.08em' }}>↑ Faire défiler pour charger plus</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>↑ Faire défiler pour charger plus</span>
               </div>
             )}
             {groups.length === 0 && (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 60 }}>
                 <div style={{ fontSize: 38 }}>{view === 'group' ? '💬' : '✉️'}</div>
-                <p style={{ color: '#C4C9D4', fontSize: 13, fontWeight: 600, textAlign: 'center', margin: 0 }}>
+                <p style={{ color: 'var(--text-faint)', fontSize: 13, fontWeight: 600, textAlign: 'center', margin: 0 }}>
                   {view === 'group' ? 'Aucun message.\nLancez la conversation !' : `Commencez votre conversation\navec ${activePartner?.username ?? activePartner?.nom ?? ''}`}
                 </p>
               </div>
@@ -475,7 +475,7 @@ const MessagesPage: React.FC = () => {
               <div key={group.date}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '14px 0 12px' }}>
                   <div style={{ flex: 1, height: 1, background: '#F0F2F8' }} />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#C4C9D4', background: '#fff', padding: '2px 10px', borderRadius: 99, border: '1px solid #F0F2F8', whiteSpace: 'nowrap' }}>{group.date}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-faint)', background: 'var(--bg-card)', padding: '2px 10px', borderRadius: 99, border: '1px solid var(--border-subtle)', whiteSpace: 'nowrap' }}>{group.date}</span>
                   <div style={{ flex: 1, height: 1, background: '#F0F2F8' }} />
                 </div>
 
@@ -512,16 +512,16 @@ const MessagesPage: React.FC = () => {
                               src={msg.contenu}
                               alt={(msg as any).fileName ?? 'image'}
                               onClick={() => setLightboxSrc(msg.contenu)}
-                              style={{ maxWidth: 260, maxHeight: 220, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid #EEF0F6' }}
+                              style={{ maxWidth: 260, maxHeight: 220, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid var(--border-color)' }}
                             />
                           ) : (msg as GroupMessage).type === 'FILE' || (msg as DmMessage).type === 'FILE' ? (
                             <FileCard contenu={msg.contenu} fileName={(msg as any).fileName ?? 'fichier'} isMine={isMine} />
                           ) : (
-                            <div style={{ padding: '9px 13px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13.5, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                            <div style={{ padding: '9px 13px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? '#4F46E5' : 'var(--bg-icon)', color: isMine ? 'var(--bg-card)' : 'var(--text-primary)', fontSize: 13.5, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
                               {msg.contenu}
                             </div>
                           )}
-                          <span className="msg-time" style={{ fontSize: 10, color: '#C4C9D4', fontWeight: 500, flexShrink: 0, paddingBottom: 2 }}>{fmtTime(msg.createdAt)}</span>
+                          <span className="msg-time" style={{ fontSize: 10, color: 'var(--text-faint)', fontWeight: 500, flexShrink: 0, paddingBottom: 2 }}>{fmtTime(msg.createdAt)}</span>
                         </div>
 
                         {/* Read receipts below */}
@@ -549,11 +549,11 @@ const MessagesPage: React.FC = () => {
           )}
 
           {/* Input */}
-          <div style={{ padding: '11px 16px', borderTop: '1px solid #F0F2F8', display: 'flex', gap: 10, alignItems: 'flex-end', flexShrink: 0 }}>
+          <div style={{ padding: '11px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-end', flexShrink: 0 }}>
             {/* Attach "+" button + popup menu */}
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <button onClick={() => setShowAttach(v => !v)} title="Joindre"
-                style={{ width: 42, height: 42, borderRadius: 11, border: `1.5px solid ${showAttach ? '#4F46E5' : '#EEF0F6'}`, background: showAttach ? '#EEF2FF' : '#F8FAFC', color: showAttach ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                style={{ width: 42, height: 42, borderRadius: 11, border: `1.5px solid ${showAttach ? '#4F46E5' : '#EEF0F6'}`, background: showAttach ? '#EEF2FF' : 'var(--bg-input)', color: showAttach ? '#4F46E5' : 'var(--text-muted)', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
                 +
               </button>
               <AttachMenu
@@ -569,14 +569,14 @@ const MessagesPage: React.FC = () => {
               ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
               placeholder={view === 'group' ? "Écrire au canal… (Entrée pour envoyer)" : `Message à ${activePartner?.username ?? activePartner?.nom ?? ''}…`}
               maxLength={1000} rows={1}
-              style={{ flex: 1, resize: 'none', padding: '10px 14px', borderRadius: 12, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13.5, fontWeight: 500, color: '#1A1D2E', outline: 'none', fontFamily: 'Inter, sans-serif', lineHeight: 1.5, maxHeight: 120, overflowY: 'auto', transition: 'border-color 0.15s' }}
+              style={{ flex: 1, resize: 'none', padding: '10px 14px', borderRadius: 12, border: '1.5px solid var(--border-color)', background: 'var(--bg-input)', fontSize: 13.5, fontWeight: 500, color: 'var(--text-primary)', outline: 'none', fontFamily: 'Inter, sans-serif', lineHeight: 1.5, maxHeight: 120, overflowY: 'auto', transition: 'border-color 0.15s' }}
               onFocus={e => (e.target.style.borderColor = '#4F46E5')}
               onBlur={e => (e.target.style.borderColor = '#EEF0F6')}
               onInput={e => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }}
             />
             <button onClick={handleSend} disabled={!input.trim() || sending}
               style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, background: input.trim() ? '#4F46E5' : '#EEF2FF', border: 'none', cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
-              <svg width="17" height="17" fill="none" stroke={input.trim() ? '#fff' : '#A5B4FC'} strokeWidth={2} viewBox="0 0 24 24">
+              <svg width="17" height="17" fill="none" stroke={input.trim() ? 'var(--bg-card)' : '#A5B4FC'} strokeWidth={2} viewBox="0 0 24 24">
                 <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
             </button>

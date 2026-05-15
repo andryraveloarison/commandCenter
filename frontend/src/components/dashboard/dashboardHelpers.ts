@@ -5,16 +5,21 @@ export const getPeriodRange = (period: Period, cs: string, ce: string): [Date, D
   if (period === 'custom') return cs && ce ? [new Date(cs), new Date(ce + 'T23:59:59')] : null;
   const now = new Date();
   const start = new Date();
+  const end = new Date();
   if (period === 'semaine') {
-    const d = start.getDay();
-    start.setDate(start.getDate() - (d === 0 ? 6 : d - 1));
+    const d = now.getDay();
+    start.setDate(now.getDate() - (d === 0 ? 6 : d - 1));
     start.setHours(0, 0, 0, 0);
+    end.setDate(now.getDate() + (d === 0 ? 0 : 7 - d));
+    end.setHours(23, 59, 59, 999);
   } else if (period === 'mois') {
     start.setDate(1); start.setHours(0, 0, 0, 0);
+    end.setMonth(end.getMonth() + 1, 0); end.setHours(23, 59, 59, 999);
   } else if (period === 'annee') {
     start.setMonth(0, 1); start.setHours(0, 0, 0, 0);
+    end.setMonth(11, 31); end.setHours(23, 59, 59, 999);
   }
-  return [start, now];
+  return [start, end];
 };
 
 export const filterByRange = (items: any[], key: string, range: [Date, Date] | null) => {
@@ -22,6 +27,8 @@ export const filterByRange = (items: any[], key: string, range: [Date, Date] | n
   const [s, e] = range;
   return items.filter(item => { const d = new Date(item[key]); return d >= s && d <= e; });
 };
+
+const ivDate = (iv: any): string => iv.dateIntervention ?? iv.createdAt;
 
 const mkPoint = (label: string, chunk: any[]) => ({
   label,
@@ -42,7 +49,7 @@ export const buildEvolution = (items: any[], period: Period, cs: string, ce: str
     return Array.from({ length: 7 }, (_, i) => {
       const s = new Date(mon); s.setDate(mon.getDate() + i);
       const e = new Date(s);   e.setDate(s.getDate() + 1);
-      return mkPoint(s.toLocaleDateString('fr-FR', { weekday: 'short' }), items.filter((iv: any) => inRange(iv.createdAt, s, e)));
+      return mkPoint(s.toLocaleDateString('fr-FR', { weekday: 'short' }), items.filter((iv: any) => inRange(ivDate(iv), s, e)));
     });
   }
 
@@ -54,7 +61,7 @@ export const buildEvolution = (items: any[], period: Period, cs: string, ce: str
       const s = new Date(yr, mo, 1 + w * 7);
       if (s.getDate() > daysInMonth || s.getMonth() !== mo) break;
       const e = new Date(yr, mo, Math.min(1 + (w + 1) * 7, daysInMonth + 1));
-      weeks.push(mkPoint(`S${w + 1}`, items.filter((iv: any) => inRange(iv.createdAt, s, e))));
+      weeks.push(mkPoint(`S${w + 1}`, items.filter((iv: any) => inRange(ivDate(iv), s, e))));
     }
     return weeks;
   }
@@ -68,14 +75,14 @@ export const buildEvolution = (items: any[], period: Period, cs: string, ce: str
         const s = new Date(s0); s.setDate(s0.getDate() + i);
         const e = new Date(s);  e.setDate(s.getDate() + 1);
         if (s > e0) return null;
-        return mkPoint(s.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }), items.filter((iv: any) => inRange(iv.createdAt, s, e)));
+        return mkPoint(s.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }), items.filter((iv: any) => inRange(ivDate(iv), s, e)));
       }).filter(Boolean) as any[];
     }
     const months: any[] = [];
     const cur = new Date(s0.getFullYear(), s0.getMonth(), 1);
     while (cur <= e0) {
       const nm = new Date(cur); nm.setMonth(cur.getMonth() + 1);
-      months.push(mkPoint(cur.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }), items.filter((iv: any) => inRange(iv.createdAt, cur, nm))));
+      months.push(mkPoint(cur.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }), items.filter((iv: any) => inRange(ivDate(iv), cur, nm))));
       cur.setMonth(cur.getMonth() + 1);
     }
     return months;
@@ -87,6 +94,6 @@ export const buildEvolution = (items: any[], period: Period, cs: string, ce: str
       ? new Date(now.getFullYear(), i, 1)
       : new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
     const me = new Date(ms); me.setMonth(ms.getMonth() + 1);
-    return mkPoint(ms.toLocaleDateString('fr-FR', { month: 'short' }), items.filter((iv: any) => inRange(iv.createdAt, ms, me)));
+    return mkPoint(ms.toLocaleDateString('fr-FR', { month: 'short' }), items.filter((iv: any) => inRange(ivDate(iv), ms, me)));
   });
 };

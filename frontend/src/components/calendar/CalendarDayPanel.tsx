@@ -43,27 +43,27 @@ const CalendarDayPanel: React.FC<Props> = ({ date, tasks, onTaskClick, onClose }
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 98, background: 'rgba(0,0,0,0.2)' }} />
       <div style={{
         position: 'fixed', right: 0, top: 0, bottom: 0, width: 380,
-        background: '#fff', zIndex: 99,
+        background: 'var(--bg-card)', zIndex: 99,
         boxShadow: '-8px 0 40px rgba(0,0,0,0.12)',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
         {/* Header */}
-        <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+        <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: '#1A1D2E', fontFamily: 'Montserrat' }}>{dayLabel}</p>
-              <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 600, color: '#9CA3AF' }}>
+              <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'Montserrat' }}>{dayLabel}</p>
+              <p style={{ margin: '4px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>
                 {tasks.length} tâche{tasks.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#C4C9D4', lineHeight: 1, padding: 0 }}>×</button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: 'var(--text-faint)', lineHeight: 1, padding: 0 }}>×</button>
           </div>
         </div>
 
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 0' }}>
           {tasks.length === 0 ? (
-            <div style={{ padding: '48px 24px', textAlign: 'center', color: '#C4C9D4', fontSize: 13, fontWeight: 600 }}>
+            <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--text-faint)', fontSize: 13, fontWeight: 600 }}>
               Aucune tâche ce jour
             </div>
           ) : sorted.map(group => (
@@ -73,15 +73,15 @@ const CalendarDayPanel: React.FC<Props> = ({ date, tasks, onTaskClick, onClose }
                 {group.user
                   ? <CalendarAvatar user={group.user} size={26} />
                   : (
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <span style={{ fontSize: 12, color: '#9CA3AF' }}>?</span>
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--bg-icon)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>?</span>
                     </div>
                   )
                 }
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#1A1D2E', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   {group.label}
                 </span>
-                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: '#C4C9D4' }}>
+                <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: 'var(--text-faint)' }}>
                   {group.tasks.length}
                 </span>
               </div>
@@ -96,11 +96,11 @@ const CalendarDayPanel: React.FC<Props> = ({ date, tasks, onTaskClick, onClose }
                       key={task.id}
                       onClick={() => { onClose(); onTaskClick(task); }}
                       style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 20px', cursor: 'pointer', transition: 'background 0.1s' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F9FAFB'}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                     >
                       <div style={{ width: 3, alignSelf: 'stretch', minHeight: 18, borderRadius: 99, background: color, flexShrink: 0 }} />
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: '#1A1D2E', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {task.titre}
                       </span>
                       {task.blocage && (
@@ -109,7 +109,7 @@ const CalendarDayPanel: React.FC<Props> = ({ date, tasks, onTaskClick, onClose }
                       <span style={{ padding: '2px 8px', borderRadius: 99, fontSize: 9, fontWeight: 700, background: status.bg, color: status.text, flexShrink: 0, whiteSpace: 'nowrap' }}>
                         {task.statut.replace(/_/g, ' ')}
                       </span>
-                      <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'monospace', color: '#9CA3AF', flexShrink: 0 }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, fontFamily: 'monospace', color: 'var(--text-muted)', flexShrink: 0 }}>
                         {Math.round(task.progression)}%
                       </span>
                     </div>

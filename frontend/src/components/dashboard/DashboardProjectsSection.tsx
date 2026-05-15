@@ -11,6 +11,7 @@ import DashboardSectionHeader from './DashboardSectionHeader';
 import DashboardLegend from './DashboardLegend';
 import DashboardEmpty from './DashboardEmpty';
 import DashboardProjectLogo from './DashboardProjectLogo';
+import { useTheme } from '@store/ThemeContext';
 
 interface Props {
   projects: any[];
@@ -32,17 +33,22 @@ const getProjectMetrics = (p: any) => [
   { metric: 'Priorité',    label: p.priorite ?? 'N/A',                                                  isPercent: false, pct: 0 },
 ];
 
-const SELECT_STYLE: React.CSSProperties = {
-  width: '100%', padding: '7px 10px', borderRadius: 8,
-  border: '1.5px solid #e2e8f0', background: '#f8fafc',
-  fontSize: 11, fontWeight: 700, color: '#0f172a',
-  cursor: 'pointer', outline: 'none',
-};
-
 const DashboardProjectsSection: React.FC<Props> = ({
   projects, filteredTasks, evolutionData, tasksByUser,
   ranking, projProgressData, radarData, radarProjects,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const LINE_COLOR = isDark ? '#818CF8' : '#0f172a';
+  const GRID_COLOR = isDark ? 'rgba(255,255,255,0.06)' : '#f1f5f9';
+
+  const SELECT_STYLE: React.CSSProperties = {
+    width: '100%', padding: '7px 10px', borderRadius: 8,
+    border: '1.5px solid var(--border-color)', background: 'var(--bg-input)',
+    fontSize: 11, fontWeight: 700, color: 'var(--text-primary)',
+    cursor: 'pointer', outline: 'none',
+  };
+
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const effectiveIds = selectedIds.length > 0
@@ -90,18 +96,18 @@ const DashboardProjectsSection: React.FC<Props> = ({
             <AreaChart data={evolutionData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.18} />
-                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
+                  <stop offset="5%" stopColor={LINE_COLOR} stopOpacity={0.18} />
+                  <stop offset="95%" stopColor={LINE_COLOR} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#f1f5f9" vertical={false} />
+              <CartesianGrid stroke={GRID_COLOR} vertical={false} />
               <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
               <YAxis domain={[0, 100]} fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
               <ReferenceLine y={100} stroke="#22c55e" strokeDasharray="4 2" strokeWidth={1} />
               <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Progression']} />
-              <Area type="monotone" dataKey="progression" stroke="#0f172a" strokeWidth={2.5} fill="url(#areaGrad)"
-                dot={{ r: 5, fill: '#0f172a', stroke: 'white', strokeWidth: 2 }}
-                activeDot={{ r: 7, fill: '#0f172a', stroke: '#3b82f6', strokeWidth: 3 }} />
+              <Area type="monotone" dataKey="progression" stroke={LINE_COLOR} strokeWidth={2.5} fill="url(#areaGrad)"
+                dot={{ r: 5, fill: LINE_COLOR, stroke: isDark ? '#161B2C' : 'white', strokeWidth: 2 }}
+                activeDot={{ r: 7, fill: LINE_COLOR, stroke: '#3b82f6', strokeWidth: 3 }} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -120,7 +126,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
             <div className="h-[230px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={tasksByUser} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                  <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                  <CartesianGrid stroke={GRID_COLOR} vertical={false} />
                   <XAxis dataKey="nom" fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <YAxis fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
@@ -152,7 +158,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
                   <p className="text-[10px] font-black text-slate-900 uppercase truncate">{u.fullNom}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <div className="flex-1 bg-slate-100 h-1 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-slate-900" style={{ width: `${u.rate}%` }} />
+                      <div className="h-full rounded-full" style={{ width: `${u.rate}%`, background: 'var(--accent)' }} />
                     </div>
                     <span className="text-[9px] font-black font-mono text-slate-400 flex-shrink-0">{u.rate}%</span>
                   </div>
@@ -169,8 +175,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
               <span>{filteredTasks.length} total</span>
             </div>
             <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-              <div className="h-full rounded-full bg-slate-900"
-                style={{ width: filteredTasks.length > 0 ? `${Math.round((filteredTasks.filter((t: any) => t.statut === 'COMPLETEE').length / filteredTasks.length) * 100)}%` : '0%' }} />
+              <div className="h-full rounded-full" style={{ background: 'var(--accent)', width: filteredTasks.length > 0 ? `${Math.round((filteredTasks.filter((t: any) => t.statut === 'COMPLETEE').length / filteredTasks.length) * 100)}%` : '0%' }} />
             </div>
           </div>
         )}
@@ -187,7 +192,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
         {radarProjects.length > 1 && effectiveIds.length < radarProjects.length && (
           <button
             onClick={addSlot}
-            style={{ padding: '5px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: 11, fontWeight: 800, color: '#4F46E5', cursor: 'pointer' }}
+            style={{ padding: '5px 12px', borderRadius: 8, border: '1.5px solid var(--border-color)', background: 'var(--bg-elevated)', fontSize: 11, fontWeight: 800, color: 'var(--accent)', cursor: 'pointer' }}
           >
             + Ajouter un projet
           </button>
@@ -218,7 +223,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
                   {effectiveIds.length > 1 && (
                     <button
                       onClick={() => removeSlot(idx)}
-                      style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 6, border: '1.5px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: 14, color: '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 6, border: '1.5px solid var(--border-color)', background: 'var(--bg-elevated)', cursor: 'pointer', fontSize: 14, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >×</button>
                   )}
                 </div>
@@ -229,8 +234,8 @@ const DashboardProjectsSection: React.FC<Props> = ({
             <div className="h-[240px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData} margin={{ top: 10, right: 30, left: 30, bottom: 10 }}>
-                  <PolarGrid stroke="#f1f5f9" />
-                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} />
+                  <PolarGrid stroke={GRID_COLOR} />
+                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 10, fontWeight: 700, fill: isDark ? '#8B92A8' : '#64748b' }} />
                   <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                   {selectedProjects.map((p: any, i: number) => (
                     <Radar key={p.id} name={p.nom} dataKey={p.id}
@@ -253,14 +258,14 @@ const DashboardProjectsSection: React.FC<Props> = ({
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: 'left', padding: '6px 8px', fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f1f5f9' }}>
+                  <th style={{ textAlign: 'left', padding: '6px 8px', fontSize: 9, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--border-subtle)' }}>
                     Métrique
                   </th>
                   {selectedProjects.map((p: any, i: number) => (
-                    <th key={p.id} style={{ textAlign: 'center', padding: '6px 8px', borderBottom: '1px solid #f1f5f9' }}>
+                    <th key={p.id} style={{ textAlign: 'center', padding: '6px 8px', borderBottom: '1px solid var(--border-subtle)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                         <div style={{ width: 8, height: 8, borderRadius: '50%', background: CHART_COLORS[i % CHART_COLORS.length], flexShrink: 0 }} />
-                        <span style={{ fontSize: 9, fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
                           {p.nom}
                         </span>
                       </div>
@@ -270,23 +275,23 @@ const DashboardProjectsSection: React.FC<Props> = ({
               </thead>
               <tbody>
                 {METRICS_LABELS.map((metric, rowIdx) => (
-                  <tr key={metric} style={{ background: rowIdx % 2 === 0 ? '#fafafa' : '#fff' }}>
-                    <td style={{ padding: '8px 8px', fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f8fafc' }}>
+                  <tr key={metric} style={{ background: rowIdx % 2 === 0 ? 'var(--bg-elevated)' : 'var(--bg-card)' }}>
+                    <td style={{ padding: '8px 8px', fontSize: 9, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid var(--border-subtle)' }}>
                       {metric}
                     </td>
                     {selectedProjects.map((p: any) => {
                       const m = getProjectMetrics(p).find(x => x.metric === metric)!;
                       return (
-                        <td key={p.id} style={{ padding: '8px 8px', textAlign: 'center', borderBottom: '1px solid #f8fafc' }}>
+                        <td key={p.id} style={{ padding: '8px 8px', textAlign: 'center', borderBottom: '1px solid var(--border-subtle)' }}>
                           {m.isPercent ? (
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                              <span style={{ fontSize: 12, fontWeight: 900, color: '#0f172a', fontFamily: 'monospace' }}>{m.label}</span>
-                              <div style={{ width: 48, height: 3, borderRadius: 3, background: '#e2e8f0', overflow: 'hidden' }}>
-                                <div style={{ height: '100%', borderRadius: 3, background: '#6366F1', width: `${m.pct}%` }} />
+                              <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{m.label}</span>
+                              <div style={{ width: 48, height: 3, borderRadius: 3, background: 'var(--bg-hover)', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', borderRadius: 3, background: 'var(--accent)', width: `${m.pct}%` }} />
                               </div>
                             </div>
                           ) : (
-                            <span style={{ fontSize: 11, fontWeight: 800, color: '#0f172a', fontFamily: 'monospace' }}>{m.label}</span>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{m.label}</span>
                           )}
                         </td>
                       );
@@ -310,7 +315,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={projProgressData} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }}>
-              <CartesianGrid stroke="#f1f5f9" horizontal={false} />
+              <CartesianGrid stroke={GRID_COLOR} horizontal={false} />
               <XAxis type="number" domain={[0, 100]} fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
               <YAxis type="category" dataKey="nom" width={95} fontSize={9} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
               <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: any) => [`${v}%`, 'Progression']} />
@@ -356,7 +361,7 @@ const DashboardProjectsSection: React.FC<Props> = ({
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                   <div className="h-full rounded-full transition-all"
-                    style={{ width: `${project.progressionGlobale}%`, backgroundColor: STATUS_PROJ[project.statut]?.color ?? '#0f172a' }} />
+                    style={{ width: `${project.progressionGlobale}%`, backgroundColor: STATUS_PROJ[project.statut]?.color ?? 'var(--accent)' }} />
                 </div>
               </div>
             </div>
@@ -365,14 +370,14 @@ const DashboardProjectsSection: React.FC<Props> = ({
                 {project.teams?.length > 0 ? (
                   project.teams.slice(0, 4).map((member: any) => (
                     <div key={member.id} title={`@${member.user?.username ?? member.user?.nom}`}
-                      className="w-7 h-7 rounded-lg border-2 border-white flex items-center justify-center text-[9px] font-black text-white uppercase overflow-hidden flex-shrink-0"
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-black text-white uppercase overflow-hidden flex-shrink-0" style={{ border: '2px solid var(--bg-card)' }}
                       style={{ backgroundColor: avatarColor(member.userId) }}>
                       {member.user?.photo ? <img src={member.user.photo} className="w-full h-full object-cover" alt="" /> : member.user?.username?.[0] || member.user?.nom?.[0] || '?'}
                     </div>
                   ))
                 ) : <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Aucun membre</span>}
                 {project.teams?.length > 4 && (
-                  <div className="w-7 h-7 rounded-lg border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-black text-slate-600">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[8px] font-black" style={{ border: '2px solid var(--bg-card)', background: 'var(--bg-icon)', color: 'var(--text-sub)' }}>
                     +{project.teams.length - 4}
                   </div>
                 )}

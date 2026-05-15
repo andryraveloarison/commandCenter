@@ -206,38 +206,38 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
         </div>
       )}
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 54, background: 'rgba(0,0,0,0.15)', backdropFilter: 'blur(1px)' }} />
-      <div style={{ position: 'fixed', top: 62, right: 0, bottom: 0, width: 340, background: '#FFFFFF', borderLeft: '1px solid #EEF0F6', display: 'flex', flexDirection: 'column', zIndex: 55, boxShadow: '-4px 0 24px rgba(0,0,0,0.07)' }}>
+      <div style={{ position: 'fixed', top: 62, right: 0, bottom: 0, width: 340, background: 'var(--bg-card)', borderLeft: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', zIndex: 55, boxShadow: '-4px 0 24px rgba(0,0,0,0.07)' }}>
 
         {/* Header */}
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid #F0F2F8', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>💬</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>💬</div>
             <div>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D2E' }}>Chat d'équipe</p>
-              <p style={{ margin: 0, fontSize: 10.5, color: '#B0B5CC', fontWeight: 500 }}>Canal global · Temps réel</p>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>Chat d'équipe</p>
+              <p style={{ margin: 0, fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 500 }}>Canal global · Temps réel</p>
             </div>
           </div>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: '#F5F7FA', cursor: 'pointer', color: '#9CA3AF', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: 'var(--bg-app)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
 
         {/* Messages */}
         <div ref={scrollRef} onScroll={handleScroll} style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 2 }}>
           {groupCache.loadingMore && (
-            <div style={{ textAlign: 'center', padding: '6px 0', fontSize: 10, fontWeight: 600, color: '#C4C9D4' }}>
+            <div style={{ textAlign: 'center', padding: '6px 0', fontSize: 10, fontWeight: 600, color: 'var(--text-faint)' }}>
               Chargement…
             </div>
           )}
           {groups.length === 0 && !groupCache.loadingMore && (
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <p style={{ color: '#C4C9D4', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>Aucun message.<br />Soyez le premier à écrire !</p>
+              <p style={{ color: 'var(--text-faint)', fontSize: 12, fontWeight: 600, textAlign: 'center' }}>Aucun message.<br />Soyez le premier à écrire !</p>
             </div>
           )}
           {groups.map(group => (
             <div key={group.date}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '10px 0 8px' }}>
-                <div style={{ flex: 1, height: 1, background: '#F0F2F8' }} />
-                <span style={{ fontSize: 10, fontWeight: 600, color: '#C4C9D4', whiteSpace: 'nowrap' }}>{group.date}</span>
-                <div style={{ flex: 1, height: 1, background: '#F0F2F8' }} />
+                <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-faint)', whiteSpace: 'nowrap' }}>{group.date}</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
               </div>
               {group.msgs.map((msg, idx) => {
                 const isMine     = msg.user.id === currentUserId;
@@ -261,16 +261,16 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
                             src={toFileUrl(msg.contenu)}
                             alt={msg.fileName ?? 'image'}
                             onClick={() => setLightboxSrc(toFileUrl(msg.contenu))}
-                            style={{ maxWidth: 220, maxHeight: 180, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid #EEF0F6' }}
+                            style={{ maxWidth: 220, maxHeight: 180, borderRadius: 10, display: 'block', cursor: 'zoom-in', border: '1px solid var(--border-color)' }}
                           />
                         ) : msg.type === 'FILE' ? (
                           <FileCard contenu={toFileUrl(msg.contenu)} fileName={msg.fileName ?? 'fichier'} isMine={isMine} />
                         ) : (
-                          <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
+                          <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : 'var(--bg-icon)', color: isMine ? 'var(--bg-card)' : 'var(--text-primary)', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
                             {msg.contenu}
                           </div>
                         )}
-                        <span className="msg-time" style={{ fontSize: 9.5, color: '#C4C9D4', fontWeight: 500, flexShrink: 0, paddingBottom: 1 }}>{formatTime(msg.createdAt)}</span>
+                        <span className="msg-time" style={{ fontSize: 9.5, color: 'var(--text-faint)', fontWeight: 500, flexShrink: 0, paddingBottom: 1 }}>{formatTime(msg.createdAt)}</span>
                       </div>
                       {/* Read receipts */}
                       {isMine && msg.reads && msg.reads.length > 0 && (() => {
@@ -300,12 +300,12 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
         {showPollForm && <CreatePollForm onSubmit={handleCreatePoll} onCancel={() => setShowPollForm(false)} />}
 
         {/* Input */}
-        <div style={{ padding: '12px 14px', borderTop: '1px solid #F0F2F8', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <button
               onClick={() => setShowAttach(v => !v)}
               title="Joindre"
-              style={{ width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${showAttach ? '#4F46E5' : '#EEF0F6'}`, background: showAttach ? '#EEF2FF' : '#F8FAFC', color: showAttach ? '#4F46E5' : '#9CA3AF', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
+              style={{ width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${showAttach ? '#4F46E5' : 'var(--border-color)'}`, background: showAttach ? 'var(--accent-soft)' : 'var(--bg-input)', color: showAttach ? 'var(--accent)' : 'var(--text-muted)', cursor: 'pointer', fontSize: 22, fontWeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}
             >+</button>
             <AttachMenu
               open={showAttach}
@@ -318,13 +318,13 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
           <input
             ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
             placeholder="Écrire un message…" maxLength={1000}
-            style={{ flex: 1, padding: '10px 14px', borderRadius: 12, border: '1.5px solid #EEF0F6', background: '#F8FAFC', fontSize: 13, fontWeight: 500, color: '#1A1D2E', outline: 'none', transition: 'border-color 0.15s' }}
+            style={{ flex: 1, padding: '10px 14px', borderRadius: 12, border: '1.5px solid var(--border-color)', background: 'var(--bg-input)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', outline: 'none', transition: 'border-color 0.15s' }}
             onFocus={e => (e.target.style.borderColor = '#4F46E5')}
-            onBlur={e => (e.target.style.borderColor = '#EEF0F6')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border-color)')}
           />
           <button onClick={handleSend} disabled={!input.trim() || sending}
-            style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, background: input.trim() ? '#4F46E5' : '#EEF2FF', border: 'none', cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
-            <svg width="16" height="16" fill="none" stroke={input.trim() ? '#fff' : '#A5B4FC'} strokeWidth={2} viewBox="0 0 24 24">
+            style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, background: input.trim() ? '#4F46E5' : 'var(--accent-soft)', border: 'none', cursor: input.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+            <svg width="16" height="16" fill="none" stroke={input.trim() ? 'var(--bg-card)' : '#A5B4FC'} strokeWidth={2} viewBox="0 0 24 24">
               <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
             </svg>
           </button>

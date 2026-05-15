@@ -71,14 +71,14 @@ const VersionHistoryList: React.FC<Props> = ({
       </div>
 
       {versions.length === 0 ? (
-        <div className="py-10 text-center border-2 border-dashed border-slate-100 rounded-2xl">
+        <div className="py-10 text-center border-2 border-dashed rounded-2xl" style={{ borderColor: 'var(--border-color)' }}>
           <p className="text-slate-300 text-xs font-bold uppercase tracking-widest">Aucune version créée</p>
           <p className="text-slate-300 text-[10px] font-bold mt-1">Créez votre première version pour suivre l'évolution</p>
         </div>
       ) : (
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-slate-100" />
+          <div className="absolute left-[18px] top-4 bottom-4 w-0.5" style={{ background: 'var(--border-color)' }} />
 
           <div className="space-y-3">
             {[...versions].reverse().map((v, idx) => {
@@ -95,8 +95,8 @@ const VersionHistoryList: React.FC<Props> = ({
                   <div
                     className="absolute left-[11px] top-3.5 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
                     style={{
-                      backgroundColor: isSelected ? '#0f172a' : '#fff',
-                      borderColor: isSelected ? '#0f172a' : isLatest ? '#22c55e' : '#cbd5e1',
+                      backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-card)',
+                      borderColor: isSelected ? 'var(--accent)' : isLatest ? '#22c55e' : 'var(--border-color)',
                     }}
                   >
                     {isLatest && !isSelected && (
@@ -107,9 +107,9 @@ const VersionHistoryList: React.FC<Props> = ({
                   <div
                     className="p-4 rounded-2xl border transition-all"
                     style={{
-                      backgroundColor: isSelected ? '#f8fafc' : '#fff',
-                      borderColor: isSelected ? '#0f172a' : '#f1f5f9',
-                      boxShadow: isSelected ? '0 0 0 1px #0f172a' : 'none',
+                      backgroundColor: isSelected ? 'var(--bg-active)' : 'var(--bg-elevated)',
+                      borderColor: isSelected ? 'var(--accent)' : 'var(--border-subtle)',
+                      boxShadow: isSelected ? `0 0 0 1px var(--accent)` : 'none',
                     }}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -117,7 +117,7 @@ const VersionHistoryList: React.FC<Props> = ({
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight">{v.nom}</span>
                           {isLatest && (
-                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[8px] font-black uppercase tracking-widest rounded-md">
+                            <span className="text-[8px] font-black uppercase tracking-widest rounded-md px-2 py-0.5" style={{ background: 'rgba(34,197,94,0.15)', color: '#16A34A' }}>
                               Dernière
                             </span>
                           )}

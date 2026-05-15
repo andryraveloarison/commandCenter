@@ -19,10 +19,10 @@ const CalendarInterventionView: React.FC<Props> = ({ interventions, year, month,
     interventions.filter(i => isSameDay(i.dateIntervention || i.createdAt, year, month, day));
 
   return (
-    <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #EEF0F6', overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid #F1F5F9' }}>
+    <div style={{ background: 'var(--bg-card)', borderRadius: 20, border: '1px solid var(--border-color)', overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--border-subtle)' }}>
         {DAY_NAMES.map(d => (
-          <div key={d} style={{ padding: '12px 8px', textAlign: 'center', fontSize: 10, fontWeight: 800, color: '#C4C9D4', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <div key={d} style={{ padding: '12px 8px', textAlign: 'center', fontSize: 10, fontWeight: 800, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {d}
           </div>
         ))}
@@ -38,9 +38,9 @@ const CalendarInterventionView: React.FC<Props> = ({ interventions, year, month,
           return (
             <div key={i} style={{
               minHeight: 100, padding: '8px 6px 6px',
-              borderRight: (i + 1) % 7 !== 0 ? '1px solid #F8FAFC' : 'none',
-              borderBottom: '1px solid #F8FAFC',
-              background: isToday ? '#F8F9FF' : isValid ? '#fff' : '#FAFBFC',
+              borderRight: (i + 1) % 7 !== 0 ? '1px solid var(--border-subtle)' : 'none',
+              borderBottom: '1px solid var(--border-subtle)',
+              background: isToday ? 'var(--bg-active)' : isValid ? 'var(--bg-card)' : 'var(--bg-app)',
             }}>
               {isValid && (
                 <>
@@ -49,7 +49,7 @@ const CalendarInterventionView: React.FC<Props> = ({ interventions, year, month,
                       width: 24, height: 24, borderRadius: '50%',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 11, fontWeight: isToday ? 800 : 500,
-                      color: isToday ? '#fff' : '#6B7280',
+                      color: isToday ? 'var(--bg-card)' : 'var(--text-sub)',
                       background: isToday ? '#303292ff' : 'transparent',
                     }}>
                       {dayNum}
@@ -81,7 +81,7 @@ const CalendarInterventionView: React.FC<Props> = ({ interventions, year, month,
                       );
                     })}
                     {dayIvs.length > 3 && (
-                      <span style={{ fontSize: 9, fontWeight: 700, color: '#9CA3AF', paddingLeft: 4 }}>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', paddingLeft: 4 }}>
                         +{dayIvs.length - 3} autres
                       </span>
                     )}
