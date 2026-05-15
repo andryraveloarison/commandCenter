@@ -3,21 +3,25 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '@store/store';
 import { setUser } from '@store/slices/authSlice';
 import apiService from '@services/api';
+import { getUserColor } from '@components/partials/SubTaskRow';
+
+const ROLE_LABELS: Record<string, { label: string; sub: string }> = {
+  DSI: { label: 'DSI', sub: 'Administration système' },
+  RESPONSABLE: { label: 'Responsable', sub: 'Chef de projet' },
+  DEVELOPPEUR: { label: 'Développeur', sub: 'Équipe technique' },
+  TECH_IT: { label: 'Tech IT', sub: 'Support technique' },
+};
 
 const SettingsPage: React.FC = () => {
   const auth = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [formData, setFormData] = useState({
-    nom: '',
-    email: '',
-    password: '',
-    photo: '',
-    role: '',
+    nom: '', email: '', password: '', photo: '', role: '', description: '',
   });
 
-  // Sync local state when Redux user data arrives (crucial for page refreshes)
   useEffect(() => {
     if (auth.user) {
       setFormData({
@@ -26,40 +30,40 @@ const SettingsPage: React.FC = () => {
         password: '',
         photo: auth.user.photo || '',
         role: auth.user.role || 'DEVELOPPEUR',
+        description: auth.user.description || '',
       });
     }
   }, [auth.user]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, photo: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setFormData(f => ({ ...f, photo: reader.result as string }));
+    reader.readAsDataURL(file);
   };
 
   const handleUpdate = async () => {
     if (!auth.user?.id) return;
     setLoading(true);
-
     const updateData: any = { ...formData };
     if (!updateData.password) delete updateData.password;
-
     try {
       const response = await apiService.updateUser(auth.user.id, updateData);
       dispatch(setUser(response.data));
-      alert('Profil technique mis à jour avec succès !');
-      setFormData({ ...formData, password: '' });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      setFormData(f => ({ ...f, password: '' }));
     } catch (error) {
       console.error(error);
-      alert('Erreur lors de la mise à jour des systèmes');
     } finally {
       setLoading(false);
     }
   };
+
+  const color = auth.user ? getUserColor(auth.user.id) : '#4F46E5';
+  const initials = auth.user?.nom?.[0]?.toUpperCase() ?? '?';
+  const roleInfo = ROLE_LABELS[formData.role] ?? { label: formData.role, sub: '' };
 
   if (auth.isLoading && !auth.user) {
     return (
@@ -70,111 +74,140 @@ const SettingsPage: React.FC = () => {
   }
 
   return (
-    <div className="mx-auto space-y-12">
+    <div className="mx-auto max-w-4xl space-y-6">
 
+      {/* Profile hero card */}
+      <div className="premium-card overflow-hidden p-0">
+        {/* Banner */}
+        <div className="h-24 w-full" style={{ background: `linear-gradient(135deg, ${color}22 0%, ${color}08 100%)`, borderBottom: `1px solid ${color}18` }} />
 
-      <div className="premium-card">
-        <h2 className="premium-title text-sm mb-10 border-b border-slate-100 pb-4">Identité Utilisateur</h2>
-
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Photo Section */}
-          <div className="flex flex-col items-center gap-6">
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="w-48 h-48 rounded-[40px] bg-slate-50 border-4 border-white shadow-2xl overflow-hidden flex items-center justify-center relative group cursor-pointer"
-            >
-              {formData.photo ? (
-                <img src={formData.photo} alt="Profil" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-5xl text-slate-200 font-black">DSI</span>
-              )}
-              <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-2">
-                <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">Importer</span>
-                <div className="w-8 h-px bg-white/30" />
-                <span className="text-white/60 text-[8px] font-bold uppercase tracking-widest">JPG, PNG, WEBP</span>
-              </div>
-            </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-            <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] text-center">Avatar Système v2.0</p>
-          </div>
-
-          {/* Form Section */}
-          <div className="flex-1 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block ml-1">Nom Opérationnel</label>
-                <input
-                  type="text"
-                  value={formData.nom}
-                  onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-900 font-bold focus:border-slate-900 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block ml-1">Adresse Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-900 font-bold focus:border-slate-900 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block ml-1">Nouveau Mot de Passe</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-900 font-bold focus:border-slate-900 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block ml-1">Rôle Système</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-100 p-4 rounded-2xl text-slate-900 font-bold focus:border-slate-900 outline-none transition-all cursor-pointer"
-                >
-                  <option value="DSI">DSI — Administration</option>
-                  <option value="RESPONSABLE">Responsable — Chef de projet</option>
-                  <option value="DEVELOPPEUR">Développeur — Équipe technique</option>
-                  <option value="TECH_IT">Tech IT — Support technique</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <button
-                onClick={handleUpdate}
-                disabled={loading}
-                className="w-full py-5 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 shadow-xl transition-all disabled:opacity-50"
+        {/* Avatar + identity */}
+        <div className="px-8 pb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-5 -mt-10 mb-6">
+            <div className="relative w-fit">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-xl flex items-center justify-center cursor-pointer group relative"
+                style={{ backgroundColor: color }}
               >
-                {loading ? 'Synchronisation...' : 'Appliquer les Modifications'}
-              </button>
+                {formData.photo
+                  ? <img src={formData.photo} alt="" className="w-full h-full object-cover" />
+                  : <span className="text-white text-2xl font-black">{initials}</span>
+                }
+                <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center rounded-xl">
+                  <span className="text-white text-[9px] font-black uppercase tracking-widest">Modifier</span>
+                </div>
+              </div>
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+            </div>
+
+            <div className="flex-1 pb-1">
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight leading-none">{auth.user?.nom || '—'}</h2>
+              <p className="text-[11px] font-black mt-1" style={{ color }}>@{auth.user?.username}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest" style={{ background: `${color}15`, color }}>
+                  {roleInfo.label}
+                </span>
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{roleInfo.sub}</span>
+              </div>
             </div>
           </div>
+
+          {/* Description preview */}
+          {formData.description && (
+            <p className="text-sm text-slate-500 italic border-l-2 pl-3" style={{ borderColor: `${color}50` }}>
+              {formData.description}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="bg-slate-900 p-8 rounded-[32px] text-white flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <h3 className="text-lg font-black uppercase tracking-tight">Besoin d'aide ?</h3>
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-1">Contactez le support technique interne</p>
+      {/* Form card */}
+      <div className="premium-card space-y-6">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 pb-4">Modifier le profil</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Nom opérationnel</label>
+            <input
+              type="text"
+              value={formData.nom}
+              onChange={e => setFormData(f => ({ ...f, nom: e.target.value }))}
+              className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-bold text-sm focus:border-slate-400 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Adresse email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
+              className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-bold text-sm focus:border-slate-400 outline-none transition-all"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Nouveau mot de passe</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={e => setFormData(f => ({ ...f, password: e.target.value }))}
+              className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-bold text-sm focus:border-slate-400 outline-none transition-all"
+            />
+          </div>
+
+          {auth.user?.role === 'DSI' && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Rôle système</label>
+              <select
+                value={formData.role}
+                onChange={e => setFormData(f => ({ ...f, role: e.target.value }))}
+                className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-bold text-sm focus:border-slate-400 outline-none transition-all cursor-pointer"
+              >
+                <option value="DSI">DSI</option>
+                <option value="RESPONSABLE">Responsable</option>
+                <option value="DEVELOPPEUR">Développeur</option>
+                <option value="TECH_IT">Tech IT</option>
+              </select>
+            </div>
+          )}
         </div>
-        <button className="px-8 py-3 bg-white text-slate-900 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-slate-100 transition-all">
-          Ouvrir un Ticket
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block">Description / Bio</label>
+          <textarea
+            rows={3}
+            placeholder="Décrivez votre rôle, vos compétences, votre mission..."
+            value={formData.description}
+            onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
+            className="w-full bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl text-slate-900 font-medium text-sm focus:border-slate-400 outline-none transition-all resize-none"
+          />
+        </div>
+
+        <button
+          onClick={handleUpdate}
+          disabled={loading}
+          className="w-full py-4 font-black uppercase tracking-[0.2em] text-[11px] rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+          style={{
+            background: saved ? '#22c55e' : '#1A1D2E',
+            color: '#fff',
+          }}
+        >
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Synchronisation...
+            </>
+          ) : saved ? (
+            '✓ Profil mis à jour'
+          ) : (
+            'Appliquer les modifications'
+          )}
         </button>
       </div>
+
     </div>
   );
 };

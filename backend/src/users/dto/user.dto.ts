@@ -54,4 +54,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(['DSI', 'RESPONSABLE', 'DEVELOPPEUR', 'TECH_IT'])
   role?: string;
+
+  @ApiProperty({ example: 'Ingénieur full-stack spécialisé...', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

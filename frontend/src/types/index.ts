@@ -3,6 +3,7 @@ export interface User {
   email: string;
   username: string;
   nom: string;
+  description?: string;
   photo?: string;
   role: 'DSI' | 'RESPONSABLE' | 'DEVELOPPEUR' | 'TECH_IT';
   statut: 'ACTIF' | 'INACTIF' | 'OCCUPE';

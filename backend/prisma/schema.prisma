@@ -17,9 +17,10 @@ model User {
   email     String     @unique
   username  String     @unique
   password  String
-  nom       String
-  photo     String?
-  role      UserRole   @default(DEVELOPPEUR)
+  nom         String
+  description String?
+  photo       String?
+  role        UserRole   @default(DEVELOPPEUR)
   statut    UserStatus @default(ACTIF)
   activite  DateTime   @default(now())
   createdAt DateTime   @default(now())

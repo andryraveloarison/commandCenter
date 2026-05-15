@@ -45,4 +45,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(`user:${receiverId}`).emit('dm_message', message);
     this.server.to(`user:${senderId}`).emit('dm_message', message);
   }
+
+  emitToAll(event: string, data: any) {
+    this.server.emit(event, data);
+  }
+
+  emitToUser(userId: string, event: string, data: any) {
+    this.server.to(`user:${userId}`).emit(event, data);
+  }
 }

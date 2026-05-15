@@ -19,6 +19,7 @@ export class UsersService {
         email: true,
         username: true,
         nom: true,
+        description: true,
         photo: true,
         role: true,
         statut: true,
@@ -36,6 +37,7 @@ export class UsersService {
         email: true,
         username: true,
         nom: true,
+        description: true,
         photo: true,
         role: true,
         statut: true,
@@ -47,7 +49,7 @@ export class UsersService {
 
   async update(id: string, dto: UpdateUserDto) {
     const data = { ...dto } as any;
-    
+
     if (data.password) {
       const bcrypt = require('bcryptjs');
       data.password = await bcrypt.hash(data.password, 10);
@@ -61,6 +63,7 @@ export class UsersService {
         email: true,
         username: true,
         nom: true,
+        description: true,
         photo: true,
         role: true,
         statut: true,

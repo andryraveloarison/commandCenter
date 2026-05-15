@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
@@ -54,7 +55,10 @@ export class UsersController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update user' })
-  async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Request() req) {
+    if (dto.role !== undefined && req.user.role !== 'DSI') {
+      throw new ForbiddenException('Seul un DSI peut modifier les grades.');
+    }
     return this.usersService.update(id, dto);
   }
 

@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@store/store';
 import { logout } from '@store/slices/authSlice';
 import apiService from '@services/api';
+import { useRealtimeEvents } from '@hooks/useRealtimeEvents';
+import RealtimeNotification from '@components/RealtimeNotification';
 
 interface LayoutProps { children: React.ReactNode; }
 
@@ -85,7 +87,7 @@ const mainNav = [
   { path: '/projects', label: 'Projets', icon: 'projects' },
   { path: '/interventions', label: 'Interventions', icon: 'wrench' },
   { path: '/calendar', label: 'Calendrier', icon: 'calendar' },
-  { path: '/users', label: 'Équipe', icon: 'users' },
+  { path: '/users', label: 'Squads', icon: 'users' },
   { path: '/messages', label: 'Messages', icon: 'messages' },
 ];
 const helpNav = [{ path: '/settings', label: 'Configuration', icon: 'settings' }];
@@ -234,6 +236,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const auth = useSelector((state: RootState) => state.auth);
 
+  useRealtimeEvents();
+
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
@@ -343,6 +347,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#F5F7FA', fontFamily: 'Inter, sans-serif' }}>
+
+      <RealtimeNotification />
 
       {/* ═══════════ TOPBAR ══════════════════════════════════════════════ */}
       <header style={{

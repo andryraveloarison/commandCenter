@@ -41,6 +41,13 @@ export class ChatService {
       where: { userId, type: 'MESSAGE', lu: false },
       data:  { lu: true },
     });
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, nom: true, username: true, photo: true },
+    });
+    this.gateway.emitToAll('message:read', { user });
+
     return { success: true };
   }
 

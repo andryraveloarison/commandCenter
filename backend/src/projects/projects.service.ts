@@ -1,10 +1,11 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateProjectDto, UpdateProjectDto, AddTeamMemberDto } from './dto/project.dto';
+import { ChatGateway } from '../chat/chat.gateway';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private chat: ChatGateway) {}
 
   private async assertProjectMember(projectId: string, userId: string, userRole: string) {
     if (userRole === 'DSI') return;
@@ -17,6 +18,8 @@ export class ProjectsService {
   }
 
   async create(dto: CreateProjectDto, userId: string) {
+    const actor = await this.prisma.user.findUnique({ where: { id: userId }, select: { nom: true, username: true } });
+
     const project = await this.prisma.project.create({
       data: {
         nom: dto.nom,
@@ -30,26 +33,38 @@ export class ProjectsService {
 
     // Add creator to team
     await this.prisma.projectTeam.create({
-      data: {
-        projectId: project.id,
-        userId: userId,
-        role: 'COLONEL',
-      },
+      data: { projectId: project.id, userId, role: 'COLONEL' },
     });
+
+    const memberIds = [userId];
 
     // Add selected team members
     if (dto.teamUserIds && dto.teamUserIds.length > 0) {
       for (const memberId of dto.teamUserIds) {
         if (memberId !== userId) {
           await this.prisma.projectTeam.create({
-            data: {
-              projectId: project.id,
-              userId: memberId,
-              role: 'SOLDAT',
-            },
+            data: { projectId: project.id, userId: memberId, role: 'SOLDAT' },
           });
+          memberIds.push(memberId);
         }
       }
+    }
+
+    // Broadcast to ALL → cache refresh
+    this.chat.emitToAll('project:created', {
+      projectId: project.id,
+      nom: project.nom,
+      actorUsername: actor?.username ?? 'inconnu',
+    });
+
+    // Notify team members only
+    for (const memberId of memberIds) {
+      this.chat.emitToUser(memberId, 'notification', {
+        type: 'project:created',
+        title: 'Nouveau dossier',
+        message: `"${project.nom}" — vous faites partie de l'équipe`,
+        projectId: project.id,
+      });
     }
 
     return project;
@@ -100,16 +115,18 @@ export class ProjectsService {
   }
 
   async update(id: string, dto: UpdateProjectDto) {
-    return this.prisma.project.update({
+    const project = await this.prisma.project.update({
       where: { id },
       data: dto as any,
     });
+    this.chat.emitToAll('project:updated', { projectId: id, nom: project.nom });
+    return project;
   }
 
   async remove(id: string) {
-    return this.prisma.project.delete({
-      where: { id },
-    });
+    const project = await this.prisma.project.delete({ where: { id } });
+    this.chat.emitToAll('project:deleted', { projectId: id, nom: project.nom });
+    return project;
   }
 
   async addTeamMember(projectId: string, dto: AddTeamMemberDto, requesterId: string, requesterRole: string) {

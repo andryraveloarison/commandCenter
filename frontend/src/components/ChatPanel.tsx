@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import apiService from '@services/api';
+import socketService from '@services/socket';
 import PollCard from './chat/PollCard';
 import CreatePollForm from './chat/CreatePollForm';
 import type { GroupMessage, Poll } from './chat/chatTypes';
@@ -25,17 +26,44 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
 
-  const fetchMessages = async () => {
-    try { const res = await apiService.getMessages(); setMessages(res.data); } catch {}
-  };
-
+  // Initial load + mark as read
   useEffect(() => {
     if (!open) return;
-    fetchMessages();
+    apiService.getMessages().then(r => setMessages(r.data)).catch(() => {});
+    apiService.markMessagesAsRead().catch(() => {});
     inputRef.current?.focus();
-    const id = setInterval(fetchMessages, 3000);
-    return () => clearInterval(id);
   }, [open]);
+
+  // Real-time: new group messages
+  useEffect(() => {
+    const handler = (msg: GroupMessage) => {
+      setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg]);
+    };
+    socketService.on<GroupMessage>('group_message', handler);
+    return () => socketService.off('group_message', handler);
+  }, []);
+
+  // Real-time: poll updates
+  useEffect(() => {
+    const handler = (updatedPoll: Poll) => {
+      setMessages(prev => prev.map(m => m.poll?.id === updatedPoll.id ? { ...m, poll: updatedPoll } : m));
+    };
+    socketService.on<Poll>('poll_update', handler);
+    return () => socketService.off('poll_update', handler);
+  }, []);
+
+  // Real-time: read receipts
+  useEffect(() => {
+    const handler = (data: { user: { id: string; nom: string; username?: string; photo?: string } }) => {
+      if (data.user.id === currentUserId) return;
+      setMessages(prev => prev.map(m => {
+        if (m.reads?.some((r: any) => r.user.id === data.user.id)) return m;
+        return { ...m, reads: [...(m.reads ?? []), { user: data.user }] };
+      }));
+    };
+    socketService.on('message:read', handler);
+    return () => socketService.off('message:read', handler);
+  }, [currentUserId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -43,7 +71,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
     const text = input.trim();
     if (!text || sending) return;
     setSending(true); setInput('');
-    try { await apiService.sendMessage(text); await fetchMessages(); } catch {}
+    try { await apiService.sendMessage(text); } catch {}
     setSending(false);
     inputRef.current?.focus();
   };
@@ -54,7 +82,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
 
   const handleCreatePoll = async (question: string, options: string[]) => {
     setShowPollForm(false);
-    try { await apiService.createPoll(question, options); await fetchMessages(); } catch {}
+    try { await apiService.createPoll(question, options); } catch {}
   };
 
   const handleVote = async (pollId: string, optionIndex: number) => {
@@ -94,7 +122,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
             <div style={{ width: 36, height: 36, borderRadius: 10, background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17 }}>💬</div>
             <div>
               <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: '#1A1D2E' }}>Chat d'équipe</p>
-              <p style={{ margin: 0, fontSize: 10.5, color: '#B0B5CC', fontWeight: 500 }}>Canal global</p>
+              <p style={{ margin: 0, fontSize: 10.5, color: '#B0B5CC', fontWeight: 500 }}>Canal global · Temps réel</p>
             </div>
           </div>
           <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: 'none', background: '#F5F7FA', cursor: 'pointer', color: '#9CA3AF', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
@@ -119,7 +147,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
                 const showAvatar = !isMine && (idx === 0 || group.msgs[idx - 1]?.user.id !== msg.user.id);
                 const color      = getColor(msg.user.id);
                 return (
-                  <div key={msg.id} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 7, marginBottom: 4, marginLeft: !isMine && !showAvatar ? 36 : 0 }}>
+                  <div key={msg.id} className="msg-row" style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 7, marginBottom: 4, marginLeft: !isMine && !showAvatar ? 36 : 0 }}>
                     {!isMine && showAvatar && (
                       <div style={{ width: 28, height: 28, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0 }}>
                         {msg.user.photo ? <img src={msg.user.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (msg.user.username ?? msg.user.nom)[0].toUpperCase()}
@@ -127,14 +155,32 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
                     )}
                     <div style={{ maxWidth: '78%', display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
                       {!isMine && showAvatar && <p style={{ margin: '0 0 2px 2px', fontSize: 10, fontWeight: 700, color }}>{msg.user.username ?? msg.user.nom}</p>}
-                      {msg.type === 'POLL' && msg.poll ? (
-                        <PollCard poll={msg.poll} currentUserId={currentUserId} isMine={isMine} onVote={handleVote} />
-                      ) : (
-                        <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
-                          {msg.contenu}
-                        </div>
-                      )}
-                      <span style={{ fontSize: 9.5, color: '#C4C9D4', fontWeight: 500, marginTop: 2, padding: '0 2px' }}>{formatTime(msg.createdAt)}</span>
+                      {/* Bubble + time side by side */}
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, flexDirection: isMine ? 'row-reverse' : 'row' }}>
+                        {msg.type === 'POLL' && msg.poll ? (
+                          <PollCard poll={msg.poll} currentUserId={currentUserId} isMine={isMine} onVote={handleVote} />
+                        ) : (
+                          <div style={{ padding: '8px 12px', borderRadius: isMine ? '14px 14px 4px 14px' : '14px 14px 14px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13, fontWeight: 500, lineHeight: 1.45, wordBreak: 'break-word' }}>
+                            {msg.contenu}
+                          </div>
+                        )}
+                        <span className="msg-time" style={{ fontSize: 9.5, color: '#C4C9D4', fontWeight: 500, flexShrink: 0, paddingBottom: 1 }}>{formatTime(msg.createdAt)}</span>
+                      </div>
+                      {/* Read receipts */}
+                      {isMine && msg.reads && msg.reads.length > 0 && (() => {
+                        const lastIdx = messages.filter(m => m.user?.id === currentUserId).indexOf(msg);
+                        const isLast = lastIdx === messages.filter(m => m.user?.id === currentUserId).length - 1;
+                        if (!isLast) return null;
+                        return (
+                          <div style={{ display: 'flex', gap: 2, marginTop: 2, justifyContent: 'flex-end' }}>
+                            {msg.reads.filter((r: any) => r.user.id !== currentUserId).slice(0, 5).map((r: any) => (
+                              <div key={r.user.id} title={`Lu par @${r.user.username ?? r.user.nom}`} style={{ width: 14, height: 14, borderRadius: '50%', background: getColor(r.user.id), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700, color: '#fff', overflow: 'hidden' }}>
+                                {r.user.photo ? <img src={r.user.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (r.user.username ?? r.user.nom)[0].toUpperCase()}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 );

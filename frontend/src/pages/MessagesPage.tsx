@@ -135,6 +135,33 @@ const MessagesPage: React.FC = () => {
     return () => socketService.off('group_message', handler);
   }, [view]);
 
+  /* Real-time: group read receipts */
+  useEffect(() => {
+    const handler = (data: { user: { id: string; nom: string; username?: string; photo?: string } }) => {
+      if (data.user.id === me?.id) return;
+      setGroupMessages(prev => prev.map(m => {
+        if (m.reads?.some(r => r.user.id === data.user.id)) return m;
+        return { ...m, reads: [...(m.reads ?? []), { user: data.user }] };
+      }));
+    };
+    socketService.on('message:read', handler);
+    return () => socketService.off('message:read', handler);
+  }, [me?.id]);
+
+  /* Real-time: DM read receipts */
+  useEffect(() => {
+    const handler = (data: { readerId: string }) => {
+      // The partner read my messages — mark them as lu
+      if (data.readerId !== view) return; // only update if it's the active conversation
+      setDmMessages(prev => prev.map(m => ({
+        ...m,
+        lu: (m as DmMessage).sender?.id === me?.id ? true : m.lu,
+      })));
+    };
+    socketService.on('dm:read', handler);
+    return () => socketService.off('dm:read', handler);
+  }, [view, me?.id]);
+
   /* Real-time: poll votes */
   useEffect(() => {
     const handler = (updatedPoll: Poll) => {
@@ -359,7 +386,7 @@ const MessagesPage: React.FC = () => {
                   const isPoll     = view === 'group' && (msg as GroupMessage).type === 'POLL' && !!(msg as GroupMessage).poll;
 
                   return (
-                    <div key={msg.id} style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-start', gap: 9, marginBottom: 5 }}>
+                    <div key={msg.id} className="msg-row" style={{ display: 'flex', flexDirection: isMine ? 'row-reverse' : 'row', alignItems: 'flex-start', gap: 9, marginBottom: 5 }}>
                       {!isMine && (
                         <div style={{ width: 32, flexShrink: 0 }}>
                           {showAvatar && <Av user={senderUser} size={32} />}
@@ -368,21 +395,25 @@ const MessagesPage: React.FC = () => {
                       <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
                         {!isMine && showAvatar && <p style={{ margin: '0 2px 3px', fontSize: 11, fontWeight: 700, color: col(senderId) }}>{(senderUser as any).username ?? senderUser.nom}</p>}
 
-                        {isPoll ? (
-                          <PollCard
-                            poll={(msg as GroupMessage).poll!}
-                            currentUserId={me?.id}
-                            isMine={isMine}
-                            onVote={handleVote}
-                          />
-                        ) : (
-                          <div style={{ padding: '9px 13px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13.5, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
-                            {msg.contenu}
-                          </div>
-                        )}
+                        {/* Bubble + time side by side */}
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 5, flexDirection: isMine ? 'row-reverse' : 'row' }}>
+                          {isPoll ? (
+                            <PollCard
+                              poll={(msg as GroupMessage).poll!}
+                              currentUserId={me?.id}
+                              isMine={isMine}
+                              onVote={handleVote}
+                            />
+                          ) : (
+                            <div style={{ padding: '9px 13px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? '#4F46E5' : '#F3F4F6', color: isMine ? '#fff' : '#1A1D2E', fontSize: 13.5, fontWeight: 500, lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                              {msg.contenu}
+                            </div>
+                          )}
+                          <span className="msg-time" style={{ fontSize: 10, color: '#C4C9D4', fontWeight: 500, flexShrink: 0, paddingBottom: 2 }}>{fmtTime(msg.createdAt)}</span>
+                        </div>
 
+                        {/* Read receipts below */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, flexDirection: isMine ? 'row-reverse' : 'row' }}>
-                          <span style={{ fontSize: 10, color: '#C4C9D4', fontWeight: 500, padding: '0 2px' }}>{fmtTime(msg.createdAt)}</span>
                           {view === 'group' && isMine && (
                             <ReadReceipts users={Object.values(lastReadByUser).filter(v => v.msgId === msg.id).map(v => v.user)} align="right" />
                           )}

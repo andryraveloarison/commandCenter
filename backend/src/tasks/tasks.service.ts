@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateTaskDto, UpdateTaskDto, CreateCommentDto } from './dto/task.dto';
+import { ChatGateway } from '../chat/chat.gateway';
 
 // Helper to build a recursive subtask include
 const subtaskInclude = (depth = 3): any => ({
@@ -10,7 +11,7 @@ const subtaskInclude = (depth = 3): any => ({
 
 @Injectable()
 export class TasksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private chat: ChatGateway) {}
 
   private async assertProjectMember(projectId: string, userId: string, userRole: string) {
     if (userRole === 'DSI') return;
@@ -52,11 +53,18 @@ export class TasksService {
       });
     }
 
-    const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
+    const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma, this.chat);
     const actionNote = dto.parentId
       ? `Sous-tâche ajoutée : "${task.titre}"`
       : `Tâche ajoutée : "${task.titre}"`;
     await projectsService.calculateProgress(dto.projectId, userId, actionNote);
+
+    this.chat.emitToAll('task:created', {
+      taskId: task.id,
+      titre: task.titre,
+      projectId: dto.projectId,
+      actorId: userId,
+    });
 
     return task;
   }
@@ -127,9 +135,17 @@ export class TasksService {
       } else if (dto.statut !== undefined && oldTask && oldTask.statut !== dto.statut) {
         actionNote = `"${task.titre}" : statut ${oldTask.statut} → ${dto.statut}`;
       }
-      const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma);
+      const projectsService = new (require('../projects/projects.service').ProjectsService)(this.prisma, this.chat);
       await projectsService.calculateProgress(task.projectId, userId, actionNote);
     }
+
+    this.chat.emitToAll('task:updated', {
+      taskId: task.id,
+      titre: task.titre,
+      statut: task.statut,
+      progression: task.progression,
+      projectId: task.projectId,
+    });
 
     return task;
   }

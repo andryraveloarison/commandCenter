@@ -78,6 +78,7 @@ export class DirectMessagesService {
       where: { senderId: partnerId, receiverId: userId, lu: false },
       data: { lu: true },
     });
+    this.gateway.emitToUser(partnerId, 'dm:read', { readerId: userId });
     return { success: true };
   }
 

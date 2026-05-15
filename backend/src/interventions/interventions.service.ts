@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ChatGateway } from '../chat/chat.gateway';
 
 const INCLUDE = {
   intervenants: {
@@ -11,7 +12,7 @@ const INCLUDE = {
 
 @Injectable()
 export class InterventionsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private chat: ChatGateway) {}
 
   findAll() {
     return this.prisma.intervention.findMany({
@@ -34,7 +35,7 @@ export class InterventionsService {
     siteId?: string;
   }) {
     const { dateIntervention, statut, intervenantIds, ...rest } = data;
-    return this.prisma.intervention.create({
+    const intervention = await this.prisma.intervention.create({
       data: {
         ...rest,
         ...(statut && { statut: statut as any }),
@@ -47,6 +48,11 @@ export class InterventionsService {
       },
       include: INCLUDE,
     });
+    this.chat.emitToAll('intervention:created', {
+      interventionId: intervention.id,
+      probleme: intervention.probleme,
+    });
+    return intervention;
   }
 
   async update(id: string, data: {
@@ -71,7 +77,7 @@ export class InterventionsService {
         }
       }
 
-      return tx.intervention.update({
+      const updated = await tx.intervention.update({
         where: { id },
         data: {
           ...rest,
@@ -82,6 +88,14 @@ export class InterventionsService {
         },
         include: INCLUDE,
       });
+
+      this.chat.emitToAll('intervention:updated', {
+        interventionId: updated.id,
+        probleme: updated.probleme,
+        statut: updated.statut,
+      });
+
+      return updated;
     });
   }
 

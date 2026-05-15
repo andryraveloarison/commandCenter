@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import Radar from '@components/Radar';
+import SystemLog from '@components/SystemLog';
 import apiService from '@services/api';
 
 const WarRoomPage: React.FC = () => {
@@ -106,25 +107,8 @@ const WarRoomPage: React.FC = () => {
         </div>
       </div>
 
-      {/* System Journal */}
-      <div className="premium-card bg-slate-900 border-none">
-        <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-4">
-          <div className="flex gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-slate-700" />
-            <div className="w-2 h-2 rounded-full bg-slate-700" />
-            <div className="w-2 h-2 rounded-full bg-slate-700" />
-          </div>
-          <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Journal d'exploitation système</span>
-        </div>
-        <div className="font-mono text-[11px] h-32 overflow-y-auto space-y-1.5 custom-scrollbar text-slate-300">
-          <p><span className="text-white/20">[{new Date().toLocaleDateString()}]</span> INITIALISATION DES SYSTÈMES DSI...</p>
-          <p><span className="text-white/20">[{timeString}]</span> SURVEILLANCE RÉSEAU ACTIVE</p>
-          <p className="text-blue-400">PROJETS CHARGÉS: {projects.length}</p>
-          <p className="text-purple-400">MEMBRES EN LIGNE: {onlineUsers.length}</p>
-          <p className="text-green-500">TOUS LES SYSTÈMES SONT OPÉRATIONNELS</p>
-          <p className="text-white/40 italic">En attente de nouvelles entrées...</p>
-        </div>
-      </div>
+      {/* System Journal — live, in-memory */}
+      <SystemLog />
     </div>
   );
 };

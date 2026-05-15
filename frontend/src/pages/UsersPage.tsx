@@ -56,6 +56,9 @@ const UsersPage: React.FC = () => {
                 <div className="space-y-1">
                   <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">{user.nom}</h3>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{user.role || 'DÉVELOPPEUR'}</p>
+                  {user.description && (
+                    <p className="text-[11px] text-slate-400 mt-2 line-clamp-2 leading-relaxed">{user.description}</p>
+                  )}
                 </div>
               </div>
             </div>
