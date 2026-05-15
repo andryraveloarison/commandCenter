@@ -35,9 +35,11 @@ export class TasksService {
         priorite: (dto.priorite || 'MOYENNE') as any,
         dateDebut: dto.dateDebut ? new Date(dto.dateDebut) : null,
         dateFin: dto.dateFin ? new Date(dto.dateFin) : null,
-        assigneeId: dto.assigneeId,
+        assigneeId: dto.assigneeId || null,
         moduleId: dto.moduleId,
         parentId: dto.parentId,
+        situation: dto.situation || null,
+        blocage: dto.blocage || null,
       },
       include: { assignee: true },
     });
@@ -81,9 +83,37 @@ export class TasksService {
 
   async update(id: string, dto: UpdateTaskDto, userId: string) {
     const oldTask = await this.prisma.task.findUnique({ where: { id } });
+
+    const data: any = { ...dto };
+
+    // Sanitize optional fields — only when explicitly sent in the request
+    if ('dateDebut' in dto) data.dateDebut = dto.dateDebut ? new Date(dto.dateDebut) : null;
+    if ('dateFin'   in dto) data.dateFin   = dto.dateFin   ? new Date(dto.dateFin)   : null;
+    if ('assigneeId' in dto) data.assigneeId = dto.assigneeId || null;
+    if ('situation'  in dto) data.situation  = dto.situation  || null;
+    if ('blocage'    in dto) data.blocage    = dto.blocage    || null;
+
+    // Determine new progression and statut after the update
+    const newProgression = dto.progression !== undefined ? dto.progression : oldTask?.progression ?? 0;
+    const wasCompleted = oldTask?.statut === 'COMPLETEE';
+
+    if (dto.statut === 'COMPLETEE' || newProgression >= 100) {
+      // Mark as completed
+      data.statut = 'COMPLETEE';
+      data.progression = Math.max(newProgression, 100);
+      if (!wasCompleted) data.completedAt = new Date();
+    } else if (dto.statut && dto.statut !== 'COMPLETEE' && wasCompleted) {
+      // Explicitly reverted from COMPLETEE
+      data.completedAt = null;
+    } else if (dto.progression !== undefined && dto.progression < 100 && wasCompleted) {
+      // Progression lowered below 100 while task was completed → revert
+      data.statut = dto.progression > 0 ? 'EN_COURS' : 'TODO';
+      data.completedAt = null;
+    }
+
     const task = await this.prisma.task.update({
       where: { id },
-      data: dto as any,
+      data,
     });
 
     // Recalculate subtask-based progression if this task has subtasks
@@ -125,11 +155,14 @@ export class TasksService {
 
     const avg = updatedSubtasks.reduce((sum, t) => sum + t.progression, 0) / updatedSubtasks.length;
 
+    const newStatut = avg >= 100 ? 'COMPLETEE' : avg > 0 ? 'EN_COURS' : 'TODO';
+    const wasCompleted = task.statut !== 'COMPLETEE' && newStatut === 'COMPLETEE';
     await this.prisma.task.update({
       where: { id: taskId },
       data: {
         progression: avg,
-        statut: avg >= 100 ? 'COMPLETEE' : avg > 0 ? 'EN_COURS' : 'TODO',
+        statut: newStatut as any,
+        ...(wasCompleted ? { completedAt: new Date() } : {}),
       },
     });
   }

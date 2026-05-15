@@ -23,7 +23,7 @@ const CalendarDetailPanel: React.FC<Props> = ({ task, onClose }) => {
             <p style={{ fontSize: 16, fontWeight: 800, color: '#1A1D2E', margin: 0, lineHeight: 1.3 }}>{task.titre}</p>
             {task.assignee && (
               <p style={{ fontSize: 11, color: '#9CA3AF', margin: '4px 0 0', fontWeight: 500 }}>
-                Assigné à {task.assignee.nom}
+                Assigné à @{task.assignee.username}
               </p>
             )}
           </div>

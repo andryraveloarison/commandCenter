@@ -57,8 +57,14 @@ const ProjectsPage: React.FC = () => {
                   </div>
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PJ_{project.id.slice(-4).toUpperCase()}</span>
                 </div>
-                <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${project.statut === 'CRITIQUE' ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-600'}`}>
-                  {project.statut}
+                <span className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
+                  project.statut === 'CRITIQUE' ? 'bg-red-50 text-red-500' :
+                  project.statut === 'EN_COURS' ? 'bg-blue-50 text-blue-600' :
+                  project.statut === 'TERMINE'  ? 'bg-green-50 text-green-600' :
+                  project.statut === 'EN_PAUSE' ? 'bg-amber-50 text-amber-600' :
+                  'bg-slate-100 text-slate-500'
+                }`}>
+                  {project.statut.replace('_', ' ')}
                 </span>
               </div>
 

@@ -8,9 +8,10 @@ interface Props {
   year: number;
   month: number;
   onTaskClick: (t: Task) => void;
+  onDayClick?: (date: Date, tasks: Task[]) => void;
 }
 
-const CalendarMonthView: React.FC<Props> = ({ tasks, year, month, onTaskClick }) => {
+const CalendarMonthView: React.FC<Props> = ({ tasks, year, month, onTaskClick, onDayClick }) => {
   const today = new Date();
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
@@ -47,13 +48,23 @@ const CalendarMonthView: React.FC<Props> = ({ tasks, year, month, onTaskClick })
           const isToday = isValid && dayNum === today.getDate() && month === today.getMonth() && year === today.getFullYear();
           const dayTasks = isValid ? getTasksForDay(dayNum) : [];
 
+          const cellDate = isValid ? new Date(year, month, dayNum) : null;
+
           return (
-            <div key={i} style={{
-              minHeight: 100, padding: '8px 6px 6px',
-              borderRight: (i + 1) % 7 !== 0 ? '1px solid #F8FAFC' : 'none',
-              borderBottom: '1px solid #F8FAFC',
-              background: isToday ? '#F8F9FF' : isValid ? '#fff' : '#FAFBFC',
-            }}>
+            <div
+              key={i}
+              onClick={() => { if (isValid && onDayClick && cellDate) onDayClick(cellDate, dayTasks); }}
+              style={{
+                minHeight: 100, padding: '8px 6px 6px',
+                borderRight: (i + 1) % 7 !== 0 ? '1px solid #F8FAFC' : 'none',
+                borderBottom: '1px solid #F8FAFC',
+                background: isToday ? '#F8F9FF' : isValid ? '#fff' : '#FAFBFC',
+                cursor: isValid && onDayClick ? 'pointer' : 'default',
+                transition: 'background 0.1s',
+              }}
+              onMouseEnter={e => { if (isValid && onDayClick) (e.currentTarget as HTMLElement).style.background = isToday ? '#F0F0FF' : '#FAFBFF'; }}
+              onMouseLeave={e => { if (isValid && onDayClick) (e.currentTarget as HTMLElement).style.background = isToday ? '#F8F9FF' : '#fff'; }}
+            >
               {isValid && (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>

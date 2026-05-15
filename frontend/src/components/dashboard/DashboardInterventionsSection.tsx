@@ -211,8 +211,8 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                           <div style={{ display: 'flex' }}>
                             {iv.intervenants.slice(0, 3).map((ir: any, i: number) => (
-                              <div key={ir.user.id} title={ir.user.nom} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
-                                {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.nom[0]}
+                              <div key={ir.user.id} title={`@${ir.user.username ?? ir.user.nom}`} style={{ width: 30, height: 30, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', flexShrink: 0, overflow: 'hidden', marginLeft: i > 0 ? -10 : 0 }}>
+                                {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : (ir.user.username?.[0] ?? ir.user.nom[0])}
                               </div>
                             ))}
                             {iv.intervenants.length > 3 && (
@@ -222,7 +222,7 @@ const DashboardInterventionsSection: React.FC<Props> = ({
                             )}
                           </div>
                           {iv.intervenants.length === 1 && (
-                            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenants[0].user.nom}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username ?? iv.intervenants[0].user.nom}</span>
                           )}
                         </div>
                       ) : <span style={{ color: '#D1D5DB', fontSize: 11 }}>—</span>}

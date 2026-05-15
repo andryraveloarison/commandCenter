@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Request,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
@@ -47,8 +48,8 @@ export class UsersController {
 
   @Get(':id/statistics')
   @ApiOperation({ summary: 'Get user statistics' })
-  async getStatistics(@Param('id') id: string) {
-    return this.usersService.getStatistics(id);
+  async getStatistics(@Param('id') id: string, @Query('period') period?: string) {
+    return this.usersService.getStatistics(id, period);
   }
 
   @Patch(':id')

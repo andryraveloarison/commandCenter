@@ -92,20 +92,47 @@ export class UsersService {
     });
   }
 
-  async getStatistics(id: string) {
+  async getStatistics(id: string, period?: string) {
+    const now = new Date();
+    let since: Date;
+    if (period === 'semaine') {
+      since = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    } else if (period === 'mois') {
+      since = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (period === 'annee') {
+      since = new Date(now.getFullYear(), 0, 1);
+    } else {
+      since = new Date(0);
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        taskAssignments: true,
+        taskAssignments: { where: { createdAt: { gte: since } } },
+        interventionParticipations: {
+          include: { intervention: true },
+          where: { intervention: { createdAt: { gte: since } } },
+        },
       },
     });
 
-    const taskStats = {
-      total: user.taskAssignments.length,
-      completed: user.taskAssignments.filter(t => t.statut === 'COMPLETEE').length,
-      inProgress: user.taskAssignments.filter(t => t.statut === 'EN_COURS').length,
-    };
+    const tasks = user.taskAssignments;
+    const interventions = user.interventionParticipations.map(p => p.intervention);
 
-    return taskStats;
+    return {
+      tasks: {
+        total:      tasks.length,
+        completed:  tasks.filter(t => t.statut === 'COMPLETEE').length,
+        inProgress: tasks.filter(t => t.statut === 'EN_COURS').length,
+        todo:       tasks.filter(t => t.statut === 'TODO').length,
+      },
+      interventions: {
+        total:     interventions.length,
+        resolu:    interventions.filter(i => i.statut === 'RESOLU').length,
+        enCours:   interventions.filter(i => i.statut === 'EN_COURS').length,
+        enAttente: interventions.filter(i => i.statut === 'EN_ATTENTE').length,
+      },
+      total: tasks.length + interventions.length,
+    };
   }
 }

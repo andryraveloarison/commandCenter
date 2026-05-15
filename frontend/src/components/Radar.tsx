@@ -142,7 +142,7 @@ const Radar: React.FC<RadarProps> = ({ users = [], size = 300 }) => {
                   <>
                     <circle cx={x} cy={y} r="13" fill={isHovered ? '#0f172a' : '#334155'} stroke="white" strokeWidth="2" />
                     <text x={x} y={y + 4.5} textAnchor="middle" fill="white" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
-                      {user.nom[0]?.toUpperCase()}
+                      {user.username?.[0]?.toUpperCase() ?? user.nom[0]?.toUpperCase()}
                     </text>
                   </>
                 )}
@@ -171,12 +171,12 @@ const Radar: React.FC<RadarProps> = ({ users = [], size = 300 }) => {
                         />
                       ) : (
                         <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '13px', fontWeight: '900', flexShrink: 0 }}>
-                          {user.nom[0]?.toUpperCase()}
+                          {user.username?.[0]?.toUpperCase() ?? user.nom[0]?.toUpperCase()}
                         </div>
                       )}
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: '10px', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {user.nom}
+                          @{user.username ?? user.nom}
                         </div>
                         <div style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                           {user.role || 'MEMBRE'}

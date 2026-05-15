@@ -2,6 +2,7 @@ export { default as CalendarAvatar } from './CalendarAvatar';
 export { default as CalendarUserFilter } from './CalendarUserFilter';
 export { default as CalendarTaskPill } from './CalendarTaskPill';
 export { default as CalendarDetailPanel } from './CalendarDetailPanel';
+export { default as CalendarDayPanel } from './CalendarDayPanel';
 export { default as CalendarInterventionPanel } from './CalendarInterventionPanel';
 export { default as CalendarGanttView } from './CalendarGanttView';
 export { default as CalendarMonthView } from './CalendarMonthView';

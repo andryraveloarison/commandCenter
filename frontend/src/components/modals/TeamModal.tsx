@@ -15,13 +15,13 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
   if (!open) return null;
 
   const handleRemove = async (userId: string, nom: string) => {
-    if (!confirm(`Retirer ${nom} de l'équipe ?`)) return;
+    if (!confirm(`Retirer @${nom} du squad ?`)) return;
     await apiService.removeProjectTeamMember(project.id, userId);
     onSuccess();
   };
 
   const handleAdd = async (userId: string) => {
-    await apiService.addProjectTeamMember(project.id, { userId, role: 'MEMBRE' });
+    await apiService.addProjectTeamMember(project.id, { userId, role: 'SOLDAT' });
     onSuccess();
   };
 
@@ -33,7 +33,7 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
 
         <div className="px-8 pt-6 pb-0 flex justify-between items-center sticky top-0 bg-white z-10" style={{ borderRadius: '24px 24px 0 0' }}>
           <h2 style={{ fontFamily: 'Montserrat', fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            Gérer l'Équipe
+            Gérer le Squad
           </h2>
           <button onClick={onClose} className="text-slate-300 hover:text-slate-700 text-2xl font-bold w-8 h-8 flex items-center justify-center transition-colors">×</button>
         </div>
@@ -41,7 +41,7 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
         <div className="px-8 pt-5 pb-8 space-y-6">
           {/* Membres actuels */}
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Membres actuels</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Squad Actuel</p>
             <div className="space-y-2">
               {project.teams?.map(member => (
                 <div key={member.id} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'var(--bg-app)' }}>
@@ -55,12 +55,14 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
                         : member.user?.nom?.[0]}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{member.user?.nom}</p>
-                      <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{member.role}</p>
+                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>@{member.user?.username ?? member.user?.nom}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: member.role === 'COLONEL' ? '#6366f1' : 'var(--text-muted)' }}>
+                        {member.role === 'COLONEL' ? '🎖 Colonel' : '🪖 Soldat'}
+                      </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => handleRemove(member.userId, member.user?.nom || '')}
+                    onClick={() => handleRemove(member.userId, member.user?.username || member.user?.nom || '')}
                     className="text-[10px] font-bold text-slate-300 hover:text-red-500 uppercase tracking-widest transition-colors"
                   >
                     Retirer
@@ -76,7 +78,7 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
           {/* Ajouter des membres */}
           {availableUsers.length > 0 && (
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ajouter des membres</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Ajouter Soldats</p>
               <div className="space-y-1 max-h-48 overflow-y-auto rounded-xl p-2" style={{ background: 'var(--bg-app)' }}>
                 {availableUsers.map(u => (
                   <div key={u.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white hover:shadow-sm transition-all">
@@ -87,7 +89,7 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
                       {u.photo ? <img src={u.photo} className="w-full h-full object-cover" alt="" /> : u.nom[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{u.nom}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>@{u.username}</p>
                       <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
                     </div>
                     <button

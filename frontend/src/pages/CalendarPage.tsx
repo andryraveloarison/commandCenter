@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@store/store';
 import apiService from '@services/api';
 import type { Task, User, Project, LocalIntervention, ViewMode, ContentType } from '@components/calendar';
+import type { ListMode } from '@components/calendar/CalendarListView';
 import {
   CalendarUserFilter,
   CalendarStatsBar,
@@ -12,9 +13,11 @@ import {
   CalendarListView,
   CalendarInterventionView,
   CalendarDetailPanel,
+  CalendarDayPanel,
   CalendarInterventionPanel,
   MONTH_NAMES,
   toLocal,
+  getWeekStart,
 } from '@components/calendar';
 
 const CalendarPage: React.FC = () => {
@@ -23,15 +26,18 @@ const CalendarPage: React.FC = () => {
 
   const [year, setYear]                   = useState(today.getFullYear());
   const [month, setMonth]                 = useState(today.getMonth());
+  const [weekStart, setWeekStart]         = useState(() => getWeekStart(today));
   const [filterUser, setFilterUser]       = useState<string>(currentUser?.id || '');
   const [selectedTask, setSelectedTask]   = useState<Task | null>(null);
   const [selectedIv, setSelectedIv]       = useState<LocalIntervention | null>(null);
+  const [selectedDay, setSelectedDay]     = useState<{ date: Date; tasks: Task[] } | null>(null);
   const [viewMode, setViewMode]           = useState<ViewMode>('month');
   const [contentType, setContentType]     = useState<ContentType>('projets');
+  const [listMode, setListMode]           = useState<ListMode>('semaine');
 
-  const { data: allTasks     = [] } = useQuery({ queryKey: ['tasks-all'],    queryFn: () => apiService.getTasks().then(r => r.data as Task[]) });
-  const { data: users        = [] } = useQuery({ queryKey: ['users'],         queryFn: () => apiService.getUsers().then(r => r.data as User[]) });
-  const { data: projects     = [] } = useQuery({ queryKey: ['projects'],      queryFn: () => apiService.getProjects().then(r => r.data as Project[]) });
+  const { data: allTasks      = [] } = useQuery({ queryKey: ['tasks-all'],    queryFn: () => apiService.getTasks().then(r => r.data as Task[]) });
+  const { data: users         = [] } = useQuery({ queryKey: ['users'],         queryFn: () => apiService.getUsers().then(r => r.data as User[]) });
+  const { data: projects      = [] } = useQuery({ queryKey: ['projects'],      queryFn: () => apiService.getProjects().then(r => r.data as Project[]) });
   const { data: interventions = [] } = useQuery({ queryKey: ['interventions'], queryFn: () => apiService.getInterventions().then(r => r.data as LocalIntervention[]) });
 
   const allUsers = useMemo(() => {
@@ -76,6 +82,19 @@ const CalendarPage: React.FC = () => {
 
   const prevMonth = () => { if (month === 0) { setYear(y => y - 1); setMonth(11); } else setMonth(m => m - 1); };
   const nextMonth = () => { if (month === 11) { setYear(y => y + 1); setMonth(0); } else setMonth(m => m + 1); };
+  const prevWeek  = () => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() - 7); return n; });
+  const nextWeek  = () => setWeekStart(d => { const n = new Date(d); n.setDate(n.getDate() + 7); return n; });
+
+  const weekEnd = useMemo(() => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + 6);
+    return d;
+  }, [weekStart]);
+
+  const useWeekNav = viewMode === 'gantt' || (viewMode === 'list' && listMode === 'semaine');
+
+  const fmtDay = (d: Date) => d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const weekLabel = `${fmtDay(weekStart)} – ${fmtDay(weekEnd)} ${weekEnd.getFullYear()}`;
 
   const btnBase: React.CSSProperties = {
     border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, transition: 'all 0.15s',
@@ -86,12 +105,25 @@ const CalendarPage: React.FC = () => {
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={prevMonth} style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}>‹</button>
-          <p style={{ margin: 0, fontWeight: 800, fontSize: 20, color: '#1A1D2E', fontFamily: 'Montserrat', minWidth: 160, textAlign: 'center' }}>
-            {MONTH_NAMES[month]} {year}
+          <button
+            onClick={useWeekNav ? prevWeek : prevMonth}
+            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}
+          >‹</button>
+          <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: '#1A1D2E', fontFamily: 'Montserrat', minWidth: 200, textAlign: 'center' }}>
+            {useWeekNav ? weekLabel : `${MONTH_NAMES[month]} ${year}`}
           </p>
-          <button onClick={nextMonth} style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}>›</button>
-          <button onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: '#6B7280' }}>
+          <button
+            onClick={useWeekNav ? nextWeek : nextMonth}
+            style={{ width: 36, height: 36, borderRadius: 10, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#6B7280' }}
+          >›</button>
+          <button
+            onClick={() => {
+              setYear(today.getFullYear());
+              setMonth(today.getMonth());
+              setWeekStart(getWeekStart(today));
+            }}
+            style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #EEF0F6', background: '#fff', cursor: 'pointer', fontSize: 11, fontWeight: 700, color: '#6B7280' }}
+          >
             Aujourd'hui
           </button>
         </div>
@@ -108,13 +140,24 @@ const CalendarPage: React.FC = () => {
 
           {/* View mode (projets only) */}
           {contentType === 'projets' && (
-            <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
-              {(['month', 'gantt', 'list'] as const).map(v => (
-                <button key={v} onClick={() => setViewMode(v)} style={{ ...btnBase, padding: '6px 14px', background: viewMode === v ? '#6366f1' : '#fff', color: viewMode === v ? '#fff' : '#9CA3AF' }}>
-                  {v === 'month' ? 'Mois' : v === 'gantt' ? 'Gantt' : 'Liste'}
-                </button>
-              ))}
-            </div>
+            <>
+              <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
+                {(['month', 'gantt', 'list'] as const).map(v => (
+                  <button key={v} onClick={() => setViewMode(v)} style={{ ...btnBase, padding: '6px 14px', background: viewMode === v ? '#6366f1' : '#fff', color: viewMode === v ? '#fff' : '#9CA3AF' }}>
+                    {v === 'month' ? 'Mois' : v === 'gantt' ? 'Gantt' : 'Liste'}
+                  </button>
+                ))}
+              </div>
+              {viewMode === 'list' && (
+                <div style={{ display: 'flex', border: '1px solid #EEF0F6', borderRadius: 10, overflow: 'hidden' }}>
+                  {(['semaine', 'mois'] as const).map(m => (
+                    <button key={m} onClick={() => setListMode(m)} style={{ ...btnBase, padding: '6px 14px', background: listMode === m ? '#0f172a' : '#fff', color: listMode === m ? '#fff' : '#9CA3AF' }}>
+                      {m === 'semaine' ? 'Semaine' : 'Mois'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -135,17 +178,29 @@ const CalendarPage: React.FC = () => {
       {/* ── Views ── */}
       {contentType === 'projets' ? (
         viewMode === 'gantt' ? (
-          <CalendarGanttView tasks={tasks} projects={projects} year={year} month={month} onTaskClick={setSelectedTask} />
+          <CalendarGanttView tasks={tasks} projects={projects} weekStart={weekStart} onTaskClick={setSelectedTask} />
         ) : viewMode === 'month' ? (
-          <CalendarMonthView tasks={tasks} year={year} month={month} onTaskClick={setSelectedTask} />
+          <CalendarMonthView
+            tasks={tasks} year={year} month={month}
+            onTaskClick={setSelectedTask}
+            onDayClick={(date, dayTasks) => setSelectedDay({ date, tasks: dayTasks })}
+          />
         ) : (
-          <CalendarListView tasks={tasks} onTaskClick={setSelectedTask} />
+          <CalendarListView tasks={tasks} projects={projects} weekStart={weekStart} year={year} month={month} listMode={listMode} onTaskClick={setSelectedTask} />
         )
       ) : (
         <CalendarInterventionView interventions={filteredInterventions} year={year} month={month} onInterventionClick={setSelectedIv} />
       )}
 
       {/* ── Detail panels ── */}
+      {selectedDay && (
+        <CalendarDayPanel
+          date={selectedDay.date}
+          tasks={selectedDay.tasks}
+          onTaskClick={t => { setSelectedDay(null); setSelectedTask(t); }}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
       {selectedTask && <CalendarDetailPanel task={selectedTask} onClose={() => setSelectedTask(null)} />}
       {selectedIv   && <CalendarInterventionPanel iv={selectedIv} onClose={() => setSelectedIv(null)} />}
     </div>

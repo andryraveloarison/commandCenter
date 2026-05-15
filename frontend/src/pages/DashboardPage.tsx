@@ -13,7 +13,7 @@ import {
 } from '@components/dashboard';
 
 const DashboardPage: React.FC = () => {
-  const [period, setPeriod]           = useState<Period>('tout');
+  const [period, setPeriod]           = useState<Period>('annee');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd]     = useState('');
 
@@ -45,8 +45,8 @@ const DashboardPage: React.FC = () => {
     .map((p: any) => ({ nom: p.nom.length > 14 ? p.nom.slice(0, 12) + '…' : p.nom, progression: Math.round(p.progressionGlobale) }));
 
   const tasksByUser = users.map((u: any) => ({
-    nom:        u.nom.length > 12 ? u.nom.slice(0, 10) + '…' : u.nom,
-    fullNom:    u.nom,
+    nom:        u.username.length > 12 ? u.username.slice(0, 10) + '…' : u.username,
+    fullNom:    u.username,
     id:         u.id,
     photo:      u.photo,
     done:       filteredTasks.filter((t: any) => t.assigneeId === u.id && t.statut === 'COMPLETEE').length,
@@ -87,8 +87,8 @@ const DashboardPage: React.FC = () => {
     intervention.intervenants?.some((iv: any) => iv.user?.id === userId) ?? false;
 
   const intervByUser = users.map((u: any) => ({
-    nom:       u.nom.length > 12 ? u.nom.slice(0, 10) + '…' : u.nom,
-    fullNom:   u.nom,
+    nom:       u.username.length > 12 ? u.username.slice(0, 10) + '…' : u.username,
+    fullNom:   u.username,
     id:        u.id,
     photo:     u.photo,
     resolu:    filteredInterventions.filter((i: any) => isIntervenant(i, u.id) && i.statut === 'RESOLU').length,

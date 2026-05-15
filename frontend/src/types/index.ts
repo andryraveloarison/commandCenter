@@ -106,3 +106,16 @@ export interface Attachment {
   taille: number;
   createdAt: string;
 }
+
+export interface ProjectVersion {
+  id: string;
+  projectId: string;
+  nom: string;
+  description?: string;
+  date: string;
+  createdAt: string;
+  createdById: string;
+  createdBy?: Pick<User, 'id' | 'nom' | 'username' | 'photo'>;
+  tasks?: Task[];
+  previousVersion?: ProjectVersion | null;
+}

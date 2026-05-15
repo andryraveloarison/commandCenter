@@ -223,10 +223,10 @@ const DashboardProjectsSection: React.FC<Props> = ({
               <div className="flex -space-x-2">
                 {project.teams?.length > 0 ? (
                   project.teams.slice(0, 4).map((member: any) => (
-                    <div key={member.id} title={member.user?.nom}
+                    <div key={member.id} title={`@${member.user?.username ?? member.user?.nom}`}
                       className="w-7 h-7 rounded-lg border-2 border-white flex items-center justify-center text-[9px] font-black text-white uppercase overflow-hidden flex-shrink-0"
                       style={{ backgroundColor: avatarColor(member.userId) }}>
-                      {member.user?.photo ? <img src={member.user.photo} className="w-full h-full object-cover" alt="" /> : member.user?.nom?.[0] || '?'}
+                      {member.user?.photo ? <img src={member.user.photo} className="w-full h-full object-cover" alt="" /> : member.user?.username?.[0] || member.user?.nom?.[0] || '?'}
                     </div>
                   ))
                 ) : <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Aucun membre</span>}

@@ -3,7 +3,8 @@ import { useMutation } from '@tanstack/react-query';
 import apiService from '@services/api';
 import type { User } from '@types/index';
 
-const USER_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#3b82f6','#8b5cf6','#ec4899'];
+// Colors ordered for maximum visual difference between consecutive assignments
+const USER_COLORS = ['#3b82f6','#ef4444','#16a34a','#7c3aed','#f97316','#0891b2','#db2777','#65a30d'];
 const colorCache: Record<string, string> = {};
 export const getUserColor = (id: string): string => {
   if (!colorCache[id]) {
@@ -20,9 +21,10 @@ interface Props {
   users: User[];
   projectUsers: User[];
   onRefresh: () => void;
+  onTaskClick?: (taskId: string) => void;
 }
 
-const SubTaskRow: React.FC<Props> = ({ task, depth, projectId, users, projectUsers, onRefresh }) => {
+const SubTaskRow: React.FC<Props> = ({ task, depth, projectId, users, projectUsers, onRefresh, onTaskClick }) => {
   const [editing, setEditing]       = useState(false);
   const [progress, setProgress]     = useState(task.progression);
   const [showAddSub, setShowAddSub] = useState(false);
@@ -61,12 +63,15 @@ const SubTaskRow: React.FC<Props> = ({ task, depth, projectId, users, projectUse
             title={task.assignee?.nom || 'Non assigné'}
           />
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold truncate ${task.progression >= 100 ? 'line-through text-slate-400' : 'text-slate-700'}`}>
+            <p
+              className={`text-sm font-semibold truncate ${task.progression >= 100 ? 'line-through text-slate-400' : 'text-slate-700'} ${onTaskClick ? 'cursor-pointer hover:text-slate-900 hover:underline underline-offset-2' : ''}`}
+              onClick={() => onTaskClick?.(task.id)}
+            >
               {task.titre}
             </p>
             {task.assignee && (
               <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: dotColor }}>
-                {task.assignee.nom}
+                @{task.assignee.username}
               </p>
             )}
           </div>
@@ -139,7 +144,7 @@ const SubTaskRow: React.FC<Props> = ({ task, depth, projectId, users, projectUse
       {task.subtasks?.map((sub: any) => (
         <SubTaskRow
           key={sub.id} task={sub} depth={depth + 1}
-          projectId={projectId} users={users} projectUsers={projectUsers} onRefresh={onRefresh}
+          projectId={projectId} users={users} projectUsers={projectUsers} onRefresh={onRefresh} onTaskClick={onTaskClick}
         />
       ))}
     </div>

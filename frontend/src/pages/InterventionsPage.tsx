@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiService from '@services/api';
+import { useSpellCheck } from '@services/spellcheck';
+import SpellCheckButton from '@components/partials/SpellCheckButton';
 
 /* ── Types ─────────────────────────────────────────────────────────────── */
 interface Site       { id: string; nom: string; }
@@ -101,7 +103,7 @@ const IntervenantsPicker: React.FC<{
               {u.photo ? <img src={u.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : u.nom[0]}
             </div>
             <div>
-              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>{u.nom}</p>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: '#1A1D2E' }}>@{u.username}</p>
               <p style={{ margin: 0, fontSize: 10, color: '#9CA3AF' }}>{u.role}</p>
             </div>
             <input type="checkbox" checked={isChecked} onChange={() => toggle(u.id)} style={{ display: 'none' }} />
@@ -133,6 +135,8 @@ const Modal: React.FC<{
   const [qa, setQa] = useState<'site' | 'demandeur' | null>(null);
   const [saving, setSaving] = useState(false);
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF(p => ({ ...p, [k]: v }));
+  const { check, checking, corrected, reset } = useSpellCheck();
+  const handleCorrect = () => check({ probleme: f.probleme, solution: f.solution }, r => setF(p => ({ ...p, ...r })));
 
   const save = async () => {
     if (!f.probleme.trim()) return;
@@ -160,7 +164,10 @@ const Modal: React.FC<{
             <h2 style={{ margin: 0, fontWeight: 800, fontSize: 17, color: '#1A1D2E' }}>{item ? 'Modifier l\'intervention' : 'Nouvelle intervention'}</h2>
             <p style={{ margin: '2px 0 0', fontSize: 11, color: '#B0B5CC' }}>Remplissez les informations de l'intervention</p>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9, border: '1px solid #EEF0F6', background: '#F9FAFB', cursor: 'pointer', fontSize: 16, color: '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <SpellCheckButton checking={checking} corrected={corrected} disabled={!f.probleme && !f.solution} onClick={handleCorrect} />
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9, border: '1px solid #EEF0F6', background: '#F9FAFB', cursor: 'pointer', fontSize: 16, color: '#9CA3AF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          </div>
         </div>
 
         {/* Body */}
@@ -169,13 +176,13 @@ const Modal: React.FC<{
           {/* Problème */}
           <div>
             <label className={lbl}>Problème *</label>
-            <textarea className={inp} rows={3} placeholder="Décrivez le problème…" value={f.probleme} onChange={e => set('probleme', e.target.value)} style={{ resize: 'vertical' }} />
+            <textarea className={inp} rows={3} placeholder="Décrivez le problème…" value={f.probleme} onChange={e => { set('probleme', e.target.value); reset(); }} style={{ resize: 'vertical' }} />
           </div>
 
           {/* Solution */}
           <div>
             <label className={lbl}>Solution</label>
-            <textarea className={inp} rows={3} placeholder="Décrivez la solution apportée…" value={f.solution} onChange={e => set('solution', e.target.value)} style={{ resize: 'vertical' }} />
+            <textarea className={inp} rows={3} placeholder="Décrivez la solution apportée…" value={f.solution} onChange={e => { set('solution', e.target.value); reset(); }} style={{ resize: 'vertical' }} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -302,7 +309,7 @@ const InterventionsPage: React.FC = () => {
     const matchStatus = filter === 'Tous' || i.statut === filter;
     const matchPeriod = isInPeriod(i.createdAt, period);
     const q = search.toLowerCase();
-    const intervenantMatch = i.intervenants.some(iv => iv.user.nom.toLowerCase().includes(q));
+    const intervenantMatch = i.intervenants.some(iv => (iv.user.username ?? iv.user.nom).toLowerCase().includes(q));
     const matchSearch = !q || i.probleme.toLowerCase().includes(q) || i.site?.nom.toLowerCase().includes(q) || i.demandeur?.nom.toLowerCase().includes(q) || intervenantMatch;
     return matchStatus && matchPeriod && matchSearch;
   });
@@ -418,8 +425,8 @@ const InterventionsPage: React.FC = () => {
                       {/* Stacked avatars */}
                       <div style={{ display: 'flex' }}>
                         {iv.intervenants.slice(0, 4).map((ir, i) => (
-                          <div key={ir.user.id} title={ir.user.nom} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
-                            {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : ir.user.nom[0]}
+                          <div key={ir.user.id} title={`@${ir.user.username ?? ir.user.nom}`} style={{ width: 26, height: 26, borderRadius: '50%', background: '#4F46E5', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', overflow: 'hidden', flexShrink: 0, marginLeft: i > 0 ? -8 : 0, zIndex: 4 - i }}>
+                            {ir.user.photo ? <img src={ir.user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" /> : (ir.user.username?.[0] ?? ir.user.nom[0])}
                           </div>
                         ))}
                         {iv.intervenants.length > 4 && (
@@ -429,7 +436,7 @@ const InterventionsPage: React.FC = () => {
                         )}
                       </div>
                       {iv.intervenants.length === 1 && (
-                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>{iv.intervenants[0].user.nom}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>@{iv.intervenants[0].user.username ?? iv.intervenants[0].user.nom}</span>
                       )}
                     </div>
                   ) : <span style={{ color: '#D1D5DB', fontSize: 12 }}>—</span>}

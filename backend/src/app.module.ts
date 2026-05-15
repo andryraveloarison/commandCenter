@@ -12,6 +12,7 @@ import { DirectMessagesModule } from './direct-messages/direct-messages.module';
 import { SitesModule } from './sites/sites.module';
 import { DemandeursModule } from './demandeurs/demandeurs.module';
 import { InterventionsModule } from './interventions/interventions.module';
+import { VersionsModule } from './versions/versions.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { InterventionsModule } from './interventions/interventions.module';
     SitesModule,
     DemandeursModule,
     InterventionsModule,
+    VersionsModule,
   ],
 })
 export class AppModule {}

@@ -83,7 +83,7 @@ const CalendarUserFilter: React.FC<Props> = ({ users, value, onChange, currentUs
               <CalendarAvatar user={u} size={32} />
               <div style={{ textAlign: 'left' }}>
                 <div>
-                  {u.nom}
+                  @{u.username ?? u.nom}
                   {u.id === currentUserId && <span style={{ fontSize: 9, color: '#9CA3AF', marginLeft: 4 }}>moi</span>}
                 </div>
                 <div style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 500 }}>{u.role}</div>

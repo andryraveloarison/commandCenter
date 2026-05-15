@@ -45,7 +45,7 @@ export class ProjectsService {
             data: {
               projectId: project.id,
               userId: memberId,
-              role: 'MEMBRE',
+              role: 'SOLDAT',
             },
           });
         }
