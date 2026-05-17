@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '@pages/LoginPage';
+import HomePage from '@pages/HomePage';
 import DashboardPage from '@pages/DashboardPage';
 import ProjectsPage from '@pages/ProjectsPage';
 import ProjectDetailPage from '@pages/ProjectDetailPage';
@@ -15,6 +16,7 @@ const Router = () => {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/home" element={<HomePage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/projects" element={<ProjectsPage />} />
       <Route path="/projects/:id" element={<ProjectDetailPage />} />
@@ -25,7 +27,7 @@ const Router = () => {
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/messages" element={<MessagesPage />} />
       <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="/" element={<Navigate to="/home" />} />
     </Routes>
   );
 };

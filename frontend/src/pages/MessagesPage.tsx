@@ -13,6 +13,7 @@ import {
   addGroupMessage, updateGroupReads, updateGroupPoll,
   setDmMessages, prependDmMessages, setDmLoadingMore,
   addDmMessage, markDmRead,
+  setConversations, upsertConversation, clearConversationUnread,
 } from '@store/slices/messagesSlice';
 
 /* ── Local types ─────────────────────────────────────────────────────────── */
@@ -106,7 +107,7 @@ const MessagesPage: React.FC = () => {
   const dmCache      = useSelector((s: RootState) => s.messages.dm);
 
   const [view, setView]                 = useState<'group' | string>('group');
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const conversations = useSelector((s: RootState) => s.messages.conversations);
   const [allUsers, setAllUsers]           = useState<UserBrief[]>([]);
   const [onlineCount, setOnlineCount]     = useState(0);
   const [input, setInput]                 = useState('');
@@ -154,21 +155,23 @@ const MessagesPage: React.FC = () => {
     fetchConversations();
   }, []);
 
-  const fetchConversations = () => { apiService.getDmConversations().then(r => setConversations(r.data)).catch(() => {}); };
+  const fetchConversations = useCallback(() => {
+    apiService.getDmConversations().then(r => dispatch(setConversations(r.data))).catch(() => {});
+  }, [dispatch]);
 
   /* ── Load initial messages when view changes (cache-first) ── */
   useEffect(() => {
     prevCountRef.current = 0;
     if (view === 'group') {
       if (groupCache.items.length === 0) {
-        apiService.getMessages({ limit: 20 }).then(r => {
+        apiService.getMessages({ limit: 1000 }).then(r => {
           dispatch(setGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
         }).catch(() => {});
       }
       apiService.markMessagesAsRead().catch(() => {});
     } else {
       if (!dmCache[view] || dmCache[view].items.length === 0) {
-        apiService.getDmMessages(view, { limit: 20 }).then(r => {
+        apiService.getDmMessages(view, { limit: 1000 }).then(r => {
           dispatch(setDmMessages({ partnerId: view, items: r.data.messages, hasMore: r.data.hasMore }));
         }).catch(() => {});
       }
@@ -252,12 +255,13 @@ const MessagesPage: React.FC = () => {
       if (view === partnerId || view === msg.sender.id) {
         dispatch(addDmMessage({ partnerId, item: msg }));
         apiService.markDmAsRead(partnerId).catch(() => {});
+        dispatch(clearConversationUnread(partnerId));
       }
       fetchConversations();
     };
     socketService.on<DmMessage>('dm_message', handler);
     return () => socketService.off('dm_message', handler);
-  }, [view, me?.id]);
+  }, [view, me?.id, fetchConversations]);
 
   const handleSend = async () => {
     const text = input.trim();

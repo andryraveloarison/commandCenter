@@ -68,6 +68,12 @@ const Icon = {
       <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
+  home: (c = 'currentColor') => (
+    <svg width={17} height={17} fill="none" stroke={c} strokeWidth={1.7} viewBox="0 0 24 24">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 21V12h6v9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   logout: (c = 'currentColor') => (
     <svg width={15} height={15} fill="none" stroke={c} strokeWidth={1.7} viewBox="0 0 24 24">
       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" strokeLinecap="round" strokeLinejoin="round" />
@@ -83,6 +89,7 @@ const Icon = {
 
 /* ── Nav config ──────────────────────────────────────────────────────────── */
 const mainNav = [
+  { path: '/home',      label: 'Accueil',         icon: 'home' },
   { path: '/dashboard', label: 'Tableau de bord', icon: 'dashboard' },
   { path: '/war-room', label: 'Centre Technique', icon: 'warroom' },
   { path: '/projects', label: 'Projets', icon: 'projects' },
@@ -94,6 +101,7 @@ const mainNav = [
 const helpNav = [{ path: '/settings', label: 'Configuration', icon: 'settings' }];
 
 const pageTitles: Record<string, string> = {
+  '/home':      'Accueil',
   '/dashboard': 'Tableau de bord',
   '/war-room': 'Centre Technique',
   '/projects': 'Projets',

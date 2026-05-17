@@ -50,7 +50,7 @@ const ChatPanel: React.FC<Props> = ({ open, onClose, currentUserId }) => {
   useEffect(() => {
     if (!open) return;
     if (groupCache.items.length === 0) {
-      apiService.getMessages({ limit: 50 }).then(r => {
+      apiService.getMessages({ limit: 1000 }).then(r => {
         dispatch(setGroupMessages({ items: r.data.messages, hasMore: r.data.hasMore }));
       }).catch(() => {});
     }

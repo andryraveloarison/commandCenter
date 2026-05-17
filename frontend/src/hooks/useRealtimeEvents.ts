@@ -112,6 +112,11 @@ export function useRealtimeEvents() {
           partnerId: d.sender?.id,
         });
       }],
+
+      // ── Online users (Radar) ─────────────────────────────────────────────
+      ['users:online_update', (users: any[]) => {
+        queryClient.setQueryData(['users-online'], users);
+      }],
     ];
 
     for (const [event, handler] of handlers) socketService.on(event, handler);

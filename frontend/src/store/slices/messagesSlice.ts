@@ -4,6 +4,12 @@ export interface MsgUser {
   id: string; nom: string; username?: string; photo?: string;
 }
 
+export interface Conversation {
+  partner: MsgUser;
+  lastMessage: { contenu: string; createdAt: string; senderId: string };
+  unread: number;
+}
+
 export interface GroupMessage {
   id: string; contenu: string; createdAt: string; type?: string;
   user: MsgUser;
@@ -29,11 +35,13 @@ interface MessagesState {
     loadingMore: boolean;
   };
   dm: Record<string, ConvCache>;
+  conversations: Conversation[];
 }
 
 const initialState: MessagesState = {
   group: { items: [], hasMore: false, loadingMore: false },
   dm: {},
+  conversations: [],
 };
 
 const messagesSlice = createSlice({
@@ -108,6 +116,20 @@ const messagesSlice = createSlice({
         for (const m of state.dm[partnerId].items) m.lu = true;
       }
     },
+
+    /* ── Conversations list ────────────────────────────────── */
+    setConversations(state, action: PayloadAction<Conversation[]>) {
+      state.conversations = action.payload;
+    },
+    upsertConversation(state, action: PayloadAction<Conversation>) {
+      const idx = state.conversations.findIndex(c => c.partner.id === action.payload.partner.id);
+      if (idx >= 0) state.conversations[idx] = action.payload;
+      else state.conversations.unshift(action.payload);
+    },
+    clearConversationUnread(state, action: PayloadAction<string>) {
+      const conv = state.conversations.find(c => c.partner.id === action.payload);
+      if (conv) conv.unread = 0;
+    },
   },
 });
 
@@ -116,6 +138,7 @@ export const {
   addGroupMessage, updateGroupReads, updateGroupPoll,
   setDmMessages, prependDmMessages, setDmLoadingMore,
   addDmMessage, markDmRead,
+  setConversations, upsertConversation, clearConversationUnread,
 } = messagesSlice.actions;
 
 export default messagesSlice.reducer;

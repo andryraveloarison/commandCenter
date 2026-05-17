@@ -70,7 +70,7 @@ const LoginPage: React.FC = () => {
       dispatch(setToken(access_token));
       const profile = await apiService.getProfile();
       dispatch(setUser(profile.data));
-      navigate('/dashboard');
+      navigate('/home');
     } catch (err: any) {
       if (!err.response) {
         setError('Erreur réseau — vérifiez votre connexion.');

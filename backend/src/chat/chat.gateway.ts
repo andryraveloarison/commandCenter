@@ -6,6 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import * as jwt from 'jsonwebtoken';
+import { PrismaService } from '../common/prisma/prisma.service';
 
 @WebSocketGateway({
   cors: { origin: '*', credentials: true },
@@ -14,8 +15,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  /* On connection: extract JWT, join user-specific room */
-  handleConnection(client: Socket) {
+  constructor(private prisma: PrismaService) {}
+
+  /* socketId → userId */
+  private readonly connectedSockets = new Map<string, string>();
+
+  async handleConnection(client: Socket) {
     const token =
       (client.handshake.auth as any)?.token ||
       client.handshake.headers?.authorization?.replace('Bearer ', '');
@@ -28,10 +33,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const userId: string = payload.sub || payload.id;
       client.data.userId = userId;
       client.join(`user:${userId}`);
+
+      this.connectedSockets.set(client.id, userId);
+
+      // Mark user as online and broadcast updated list
+      await this.prisma.user.update({ where: { id: userId }, data: { activite: new Date() } });
+      await this.broadcastOnlineUsers();
     } catch {}
   }
 
-  handleDisconnect(_client: Socket) {}
+  async handleDisconnect(client: Socket) {
+    const userId = client.data.userId as string | undefined;
+    this.connectedSockets.delete(client.id);
+
+    if (userId) {
+      // Only broadcast if no other sockets remain for this user
+      const stillConnected = [...this.connectedSockets.values()].includes(userId);
+      if (!stillConnected) await this.broadcastOnlineUsers();
+    }
+  }
+
+  private async broadcastOnlineUsers() {
+    const onlineUserIds = [...new Set(this.connectedSockets.values())];
+    const users = onlineUserIds.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: onlineUserIds } },
+          select: { id: true, nom: true, username: true, photo: true, role: true, statut: true, activite: true },
+        })
+      : [];
+    this.server.emit('users:online_update', users);
+  }
 
   emitGroupMessage(message: any) {
     this.server.emit('group_message', message);

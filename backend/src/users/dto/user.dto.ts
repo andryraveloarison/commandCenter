@@ -30,6 +30,11 @@ export class UpdateUserDto {
   @IsString()
   nom?: string;
 
+  @ApiProperty({ example: 'soldat_ryan', required: false })
+  @IsOptional()
+  @IsString()
+  username?: string;
+
   @ApiProperty({ example: 'https://avatar.url', required: false })
   @IsOptional()
   @IsString()

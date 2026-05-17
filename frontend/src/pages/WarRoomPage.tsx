@@ -21,7 +21,7 @@ const WarRoomPage: React.FC = () => {
   const { data: onlineUsers = [] } = useQuery({
     queryKey: ['users-online'],
     queryFn: () => apiService.getOnlineUsers().then(r => r.data),
-    refetchInterval: 20000,
+    staleTime: Infinity,
   });
 
   const criticalProjects = projects.filter(p => p.statut === 'CRITIQUE');
@@ -67,7 +67,7 @@ const WarRoomPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Tactical Radar */}
         <div className="lg:col-span-1 flex flex-col items-center justify-center premium-card">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 w-full text-center">Radar Équipe</p>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 w-full text-center">Radar</p>
           <Radar users={onlineUsers} size={260} />
         </div>
 

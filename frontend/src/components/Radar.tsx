@@ -192,7 +192,7 @@ const Radar: React.FC<RadarProps> = ({ users = [], size = 300 }) => {
       </div>
 
       <div className="mt-6 text-center text-[10px] font-black uppercase tracking-widest text-slate-400">
-        Membres détectés: {users.length.toString().padStart(2, '0')}
+        Soldats détectés: {users.length.toString().padStart(2, '0')}
       </div>
     </div>
   );

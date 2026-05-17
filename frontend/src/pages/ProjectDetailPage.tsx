@@ -72,6 +72,13 @@ const ProjectDetailPage: React.FC = () => {
     onSuccess: () => refresh(),
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: (statut: string) => apiService.updateProject(id!, { statut }),
+    onSuccess: () => { refresh(); queryClient.invalidateQueries({ queryKey: ['projects'] }); },
+  });
+
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+
   const isMember = (proj: Project) =>
     currentUser?.role === 'DSI' ||
     proj.teams?.some(t => (t.userId ?? t.user?.id) === currentUser?.id);
@@ -183,9 +190,41 @@ const ProjectDetailPage: React.FC = () => {
             <button onClick={() => guard(project, () => setShowModuleModal(true))} className="px-5 py-2.5 bg-slate-100 text-slate-900 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-200 transition-all">
               + Module
             </button>
-            <span className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${statusColor}`}>
-              {project.statut}
-            </span>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => guard(project, () => setShowStatusMenu(v => !v))}
+                className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest cursor-pointer flex items-center gap-1 ${statusColor}`}
+              >
+                {project.statut}
+                <svg width={10} height={10} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24" style={{ opacity: 0.6 }}>
+                  <polyline points="6 9 12 15 18 9" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {showStatusMenu && (
+                <>
+                  <div onClick={() => setShowStatusMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 98 }} />
+                  <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 6px)', background: 'var(--bg-elevated)', border: '1px solid var(--border-color)', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 99, minWidth: 160, overflow: 'hidden' }}>
+                    {[
+                      { value: 'PREPARATION', label: 'En attente', color: '#6B7280' },
+                      { value: 'EN_COURS',    label: 'En cours',   color: '#F5C518' },
+                      { value: 'CRITIQUE',    label: 'Critique',   color: '#EF4444' },
+                    ].map(s => (
+                      <button
+                        key={s.value}
+                        onClick={() => { guard(project, () => { updateStatusMutation.mutate(s.value); setShowStatusMenu(false); }); }}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px', border: 'none', background: project.statut === s.value ? s.color + '15' : 'transparent', cursor: 'pointer', textAlign: 'left', fontWeight: project.statut === s.value ? 700 : 500, fontSize: 12, color: s.color }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = s.color + '15'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = project.statut === s.value ? s.color + '15' : 'transparent'; }}
+                      >
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                        {s.label}
+                        {project.statut === s.value && <span style={{ marginLeft: 'auto', fontSize: 10 }}>✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
