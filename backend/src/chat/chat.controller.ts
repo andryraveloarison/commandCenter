@@ -103,7 +103,7 @@ export class ChatController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', { storage: multerStorage, limits: { fileSize: 10 * 1024 * 1024 } }))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
+  uploadFile(@UploadedFile() file: { filename: string; originalname: string; mimetype: string; size: number }) {
     if (!file) throw new BadRequestException('Aucun fichier reçu');
     return {
       url: `/uploads/${file.filename}`,

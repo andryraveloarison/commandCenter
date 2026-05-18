@@ -370,8 +370,8 @@ const DashboardProjectsSection: React.FC<Props> = ({
                 {project.teams?.length > 0 ? (
                   project.teams.slice(0, 4).map((member: any) => (
                     <div key={member.id} title={`@${member.user?.username ?? member.user?.nom}`}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-black text-white uppercase overflow-hidden flex-shrink-0" style={{ border: '2px solid var(--bg-card)' }}
-                      style={{ backgroundColor: avatarColor(member.userId) }}>
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-black text-white uppercase overflow-hidden flex-shrink-0"
+                      style={{ border: '2px solid var(--bg-card)', backgroundColor: avatarColor(member.userId) }}>
                       {member.user?.photo ? <img src={member.user.photo} className="w-full h-full object-cover" alt="" /> : member.user?.username?.[0] || member.user?.nom?.[0] || '?'}
                     </div>
                   ))
