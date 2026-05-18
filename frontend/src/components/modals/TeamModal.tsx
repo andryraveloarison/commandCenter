@@ -59,6 +59,9 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
                       <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: member.role === 'COLONEL' ? '#6366f1' : 'var(--text-muted)' }}>
                         {member.role === 'COLONEL' ? '🎖 Colonel' : '🪖 Soldat'}
                       </p>
+                      {member.user?.email && (
+                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{member.user.email}</p>
+                      )}
                     </div>
                   </div>
                   <button
@@ -91,6 +94,7 @@ const TeamModal: React.FC<Props> = ({ open, onClose, project, allUsers, onSucces
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>@{u.username}</p>
                       <p className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>{u.role}</p>
+                      {u.email && <p className="text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{u.email}</p>}
                     </div>
                     <button
                       onClick={() => handleAdd(u.id)}

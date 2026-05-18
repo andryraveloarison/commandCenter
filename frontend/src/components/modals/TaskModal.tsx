@@ -59,7 +59,7 @@ const TaskModal: React.FC<Props> = ({ moduleId, onClose, projectId, projectUsers
             <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">Assigné à *</label>
             <select required value={form.assigneeId} onChange={e => setForm({ ...form, assigneeId: e.target.value })} className="input-clean">
               <option value="">Sélectionner un membre</option>
-              {projectUsers.map(u => <option key={u.id} value={u.id}>{u.nom}</option>)}
+              {projectUsers.map(u => <option key={u.id} value={u.id}>@{u.username}</option>)}
             </select>
           </div>
 

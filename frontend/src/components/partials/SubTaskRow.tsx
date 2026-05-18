@@ -130,7 +130,7 @@ const SubTaskRow: React.FC<Props> = ({ task, depth, projectId, users, projectUse
             className="text-xs font-medium bg-white border border-slate-200 rounded-lg px-2 py-1.5 outline-none"
           >
             <option value="">— Assigné —</option>
-            {projectUsers.map(u => <option key={u.id} value={u.id}>{u.nom}</option>)}
+            {projectUsers.map(u => <option key={u.id} value={u.id}>@{u.username}</option>)}
           </select>
           <button
             onClick={() => { if (subTitle.trim()) addSubMutation.mutate(); }}

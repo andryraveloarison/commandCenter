@@ -206,7 +206,7 @@ const TaskDetailModal: React.FC<Props> = ({ taskId, projectUsers, onClose, onSuc
                   {canEdit ? (
                     <select value={form.assigneeId} onChange={e => setForm(f => ({ ...f, assigneeId: e.target.value }))} className="input-clean">
                       <option value="">— Non assigné —</option>
-                      {projectUsers.map(u => <option key={u.id} value={u.id}>{u.nom}</option>)}
+                      {projectUsers.map(u => <option key={u.id} value={u.id}>@{u.username}</option>)}
                     </select>
                   ) : (
                     <p className="text-sm font-bold text-slate-700">{task.assignee ? `@${task.assignee.username}` : '—'}</p>

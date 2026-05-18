@@ -6,7 +6,7 @@ import apiService from '@services/api';
 import HomeHeader from '@components/home/HomeHeader';
 import HomeProfilePanel from '@components/home/HomeProfilePanel';
 import HomeProgressCard from '@components/home/HomeProgressCard';
-import HomeYearProgress from '@components/home/HomeYearProgress';
+import HomeTimeTracker from '@components/home/HomeTimeTracker';
 import HomeGanttChart from '@components/home/HomeGanttChart';
 import HomeOnboardingCard from '@components/home/HomeOnboardingCard';
 import HomeTasksPanel from '@components/home/HomeTasksPanel';
@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, flexShrink: 0 }}>
             <HomeProgressCard tasksByDay={tasksByDay} myTasks={myTasks} />
-            <HomeYearProgress />
+            <HomeTimeTracker />
           </div>
           <div style={{ flex: 1, minHeight: 0 }}>
             <HomeGanttChart myTasks={myTasks} />
